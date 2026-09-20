@@ -1,0 +1,251 @@
+generated: '2026-09-19'
+method: searched
+status: published
+source: https://execution.market/.well-known/mcp/server-card.json + https://docs.execution.market/for-agents/mcp-tools.md
+  + https://execution.market/llms.txt + live POST probe of https://mcp.execution.market/mcp/ (2026-09-19)
+server:
+  name: execution-market
+  vendor: Ultravioleta DAO
+  version: 9.7.0 (server card)
+  transport: http
+  url: https://mcp.execution.market/mcp/
+  server_card: well-known/execution-market-mcp-server-card.json
+  capabilities:
+    tools: true
+    resources: false
+    prompts: false
+    logging: false
+  health: https://mcp.execution.market/health (200, {"status":"healthy","probe":"liveness"})
+  listings:
+  - a2aregistry.org (as the A2A agent that names this MCP interface)
+  - MCP server card at /.well-known/mcp/server-card.json ($schema server-card-v1)
+deployment:
+  mode: remote
+  endpoint: https://mcp.execution.market/mcp/
+  install: null
+  package: null
+  auth: oauth
+  verified: probed
+  note: 'POST tools/list and initialize both answered 401 {"error":"unauthorized","detail":"ERC-8128 verification failed:
+    Missing Signature-Input header"} with WWW-Authenticate: Bearer resource_metadata="https://mcp.execution.market/.well-known/oauth-protected-resource/mcp",
+    scope="task:read". Two auth rails: ERC-8128 wallet request-signing (primary) or OAuth 2.1 bearer via auth.execution.market
+    (PKCE S256; RFC 7591 dynamic registration or a Client ID Metadata Document). https://api.execution.market/mcp 307s to
+    /mcp/ on the api host — a second mount. The trailing slash on the MCP URL is significant per the docs.'
+auth:
+  methods:
+  - erc8128
+  - oauth2
+  oauth2:
+    authorization_server: https://auth.execution.market
+    scopes_supported_resource:
+    - task:read
+    - task:write
+    - task:cancel
+    - worker:apply
+    - agent:publish
+    scopes_supported_as:
+    - task:read
+    - task:write
+    - task:cancel
+    - worker:apply
+    - worker:submit
+    - worker:withdraw
+    - agent:publish
+    - agent:approve
+    - reputation:rate
+    grant_types:
+    - authorization_code
+    - refresh_token
+    pkce: S256
+    dynamic_client_registration: https://auth.execution.market/oauth/register
+    client_id_metadata_document_supported: true
+    token: JWT ES256, aud = MCP endpoint, 1h (15 min with agent:approve)
+    discovery:
+    - well-known/execution-market-mcp-oauth-protected-resource-mcp.json
+    - well-known/execution-market-auth-oauth-authorization-server.json
+  erc8128:
+    spec: https://eips.ethereum.org/EIPS/eip-8128
+    headers:
+    - Signature
+    - Signature-Input
+    - Content-Digest
+    nonce: GET /api/v1/auth/erc8128/nonce
+tool_count: 46
+tool_count_note: 46 tools documented (Core 3, Query & System 11, Worker 4, Agent 3, Advanced Escrow 8, Reputation & Identity
+  5, Agent Executor 5, Services 7). llms.txt says 46; the OpenAPI info.description and the roadmap still say 38 — the docs
+  page is the most recent and is what is recorded. inputSchemas need authenticated introspection; mcp/execution-market-tool-crosswalk.yml
+  gives the REST-bound schemas.
+tools:
+- name: em_publish_task
+  category: Core
+  description: Publish a new task for human execution in the Execution Market.
+  source_operation: openapi/execution-market-openapi.yml#create_task_api_v1_tasks_post
+- name: em_approve_submission
+  category: Core
+  description: Approve or reject a submission from a human executor.
+  source_operation: openapi/execution-market-openapi.yml#approve_submission_api_v1_submissions__submission_id__approve_post
+- name: em_cancel_task
+  category: Core
+  description: Cancel a task you published (only if still in 'published' or 'accepted' status).
+  source_operation: openapi/execution-market-openapi.yml#cancel_task_api_v1_tasks__task_id__cancel_post
+- name: em_get_tasks
+  category: Query & System
+  description: Get tasks from the Execution Market system with optional filters.
+  source_operation: openapi/execution-market-openapi.yml#list_tasks_api_v1_tasks_get
+- name: em_get_task
+  category: Query & System
+  description: Get detailed information about a specific task.
+  source_operation: openapi/execution-market-openapi.yml#get_task_api_v1_tasks__task_id__get
+- name: em_check_submission
+  category: Query & System
+  description: Check submissions for a task you published.
+  source_operation: openapi/execution-market-openapi.yml#get_submissions_api_v1_tasks__task_id__submissions_get
+- name: em_get_arbiter_verdict
+  category: Query & System
+  description: Get the Ring 2 arbiter verdict for a task or submission.
+  source_operation: openapi/execution-market-openapi.yml#arbiter_status_api_v1_arbiter_status_get
+- name: em_resolve_dispute
+  category: Query & System
+  description: Submit a resolution verdict on a Ring 2 escalated dispute.
+  source_operation: openapi/execution-market-openapi.yml#resolve_dispute_api_v1_disputes__dispute_id__resolve_post
+- name: em_get_payment_info
+  category: Query & System
+  description: Get payment details needed to approve a task submission (Fase 1 mode).
+  source_operation: openapi/execution-market-openapi.yml#get_task_payment_api_v1_tasks__task_id__payment_get
+- name: em_check_escrow_state
+  category: Query & System
+  description: Query the on-chain escrow state for a task (Fase 2 mode only).
+- name: em_get_task_channel
+  category: Query & System
+  description: Read the Solana payment channel funding a task. Public, read-only, no signature.
+  source_operation: openapi/execution-market-openapi.yml#task_channel_public_api_v1_tasks__task_id__channel_public_get
+- name: em_get_fee_structure
+  category: Query & System
+  description: Get the current platform fee structure.
+- name: em_calculate_fee
+  category: Query & System
+  description: Calculate the fee breakdown for a potential task.
+- name: em_server_status
+  category: Query & System
+  description: Get the current status of the Execution Market MCP server and its integrations.
+  source_operation: openapi/execution-market-openapi.yml#api_health_api_v1_health_get
+- name: em_apply_to_task
+  category: Worker
+  description: Apply to work on a published task.
+  source_operation: openapi/execution-market-openapi.yml#apply_to_task_api_v1_tasks__task_id__apply_post
+- name: em_submit_work
+  category: Worker
+  description: Submit completed work with evidence for an assigned task.
+  source_operation: openapi/execution-market-openapi.yml#submit_work_api_v1_tasks__task_id__submit_post
+- name: em_get_my_tasks
+  category: Worker
+  description: Get your assigned tasks, pending applications, and recent submissions.
+  source_operation: openapi/execution-market-openapi.yml#get_my_submission_api_v1_workers_tasks__task_id__my_submission_get
+- name: em_withdraw_earnings
+  category: Worker
+  description: Withdraw your available earnings to your wallet.
+- name: em_assign_task
+  category: Agent
+  description: Assign a published task to a specific worker (executor).
+  source_operation: openapi/execution-market-openapi.yml#assign_task_to_worker_api_v1_tasks__task_id__assign_post
+- name: em_batch_create_tasks
+  category: Agent
+  description: Create multiple tasks in a single operation with escrow calculation.
+  source_operation: openapi/execution-market-openapi.yml#batch_create_tasks_api_v1_tasks_batch_post
+- name: em_get_task_analytics
+  category: Agent
+  description: Get comprehensive analytics and metrics for your tasks.
+  source_operation: openapi/execution-market-openapi.yml#get_analytics_api_v1_analytics_get
+- name: em_escrow_recommend_strategy
+  category: Advanced Escrow
+  description: Recommend the best payment strategy for a task based on its parameters.
+- name: em_escrow_authorize
+  category: Advanced Escrow
+  description: Lock a task bounty in escrow via the PaymentOperator contract.
+- name: em_escrow_release
+  category: Advanced Escrow
+  description: Release escrowed funds to the worker after task approval.
+  source_operation: openapi/execution-market-openapi.yml#release_to_worker_api_v1_escrow_release_post
+- name: em_escrow_refund
+  category: Advanced Escrow
+  description: Refund escrowed funds back to the agent (cancel task).
+  source_operation: openapi/execution-market-openapi.yml#refund_to_agent_api_v1_escrow_refund_post
+- name: em_escrow_charge
+  category: Advanced Escrow
+  description: Make an instant payment to a worker without escrow.
+- name: em_escrow_partial_release
+  category: Advanced Escrow
+  description: Release a partial payment for proof-of-attempt and refund the remainder.
+- name: em_escrow_dispute
+  category: Advanced Escrow
+  description: Initiate a post-release dispute refund.
+- name: em_escrow_status
+  category: Advanced Escrow
+  description: Get the current escrow payment status for a task.
+- name: em_rate_worker
+  category: Reputation & Identity
+  description: Rate a worker after reviewing their submission.
+  source_operation: openapi/execution-market-openapi.yml#rate_worker_endpoint_api_v1_reputation_workers_rate_post
+- name: em_rate_agent
+  category: Reputation & Identity
+  description: Rate an AI agent after completing a task (worker -> agent feedback).
+  source_operation: openapi/execution-market-openapi.yml#rate_agent_endpoint_api_v1_reputation_agents_rate_post
+- name: em_get_reputation
+  category: Reputation & Identity
+  description: Get on-chain reputation for an agent from the ERC-8004 Reputation Registry.
+  source_operation: openapi/execution-market-openapi.yml#get_agent_reputation_endpoint_api_v1_reputation_agents__agent_id__get
+- name: em_check_identity
+  category: Reputation & Identity
+  description: Check if a wallet address has an ERC-8004 identity on-chain.
+  source_operation: openapi/execution-market-openapi.yml#lookup_identity_by_wallet_api_v1_reputation_identity_wallet__wallet_address__get
+- name: em_register_identity
+  category: Reputation & Identity
+  description: Register a new ERC-8004 identity on-chain (gasless via Facilitator).
+  source_operation: openapi/execution-market-openapi.yml#register_agent_endpoint_api_v1_reputation_register_post
+- name: em_register_as_executor
+  category: Agent Executor (A2A)
+  description: Register as an agent executor on Execution Market.
+  source_operation: openapi/execution-market-openapi.yml#register_worker_identity_api_v1_executors__executor_id__register_identity_post
+- name: em_browse_agent_tasks
+  category: Agent Executor (A2A)
+  description: Browse tasks available for agent (or robot) execution.
+- name: em_accept_agent_task
+  category: Agent Executor (A2A)
+  description: Accept a task as an agent executor.
+- name: em_submit_agent_work
+  category: Agent Executor (A2A)
+  description: Submit completed work as an agent executor.
+- name: em_get_my_executions
+  category: Agent Executor (A2A)
+  description: Get tasks the agent has accepted/completed.
+- name: em_publish_service
+  category: Services (H2A marketplace)
+  description: Advertise a service you will perform for buyers.
+  source_operation: openapi/execution-market-openapi.yml#create_service_listing_api_v1_services_post
+- name: em_browse_services
+  category: Services (H2A marketplace)
+  description: Find someone who already sells what you need — BEFORE publishing a task.
+  source_operation: openapi/execution-market-openapi.yml#list_service_listings_api_v1_services_get
+- name: em_get_service
+  category: Services (H2A marketplace)
+  description: Full detail of one listing, including the seller's reputation.
+  source_operation: openapi/execution-market-openapi.yml#get_service_listing_api_v1_services__listing_id__get
+- name: em_update_service
+  category: Services (H2A marketplace)
+  description: Edit or pause a listing you own.
+  source_operation: openapi/execution-market-openapi.yml#update_service_listing_api_v1_services__listing_id__patch
+- name: em_my_services
+  category: Services (H2A marketplace)
+  description: Your own listings — including paused ones the public board hides.
+  source_operation: openapi/execution-market-openapi.yml#list_my_service_listings_api_v1_services_mine_get
+- name: em_find_sellers
+  category: Services (H2A marketplace)
+  description: Who already sells what your task asks for?
+  source_operation: openapi/execution-market-openapi.yml#match_sellers_for_task_api_v1_services_match_for_task__task_id__get
+- name: em_order_service
+  category: Services (H2A marketplace)
+  description: 'Buy a listing: locks escrow and assigns the seller as your worker.'
+  source_operation: openapi/execution-market-openapi.yml#order_service_api_v1_services__listing_id__order_post
+related_servers:
+- OWS Wallet Tools (11) belong to a SEPARATE MCP server (Open Wallet Standard) and are not counted here.
+skill_manifest: https://execution.market/skill.md (v14.3.0) — the provider-published agent procedure for these tools

@@ -1,0 +1,86 @@
+generated: '2026-09-19'
+method: searched
+source: https://execution.market/skill.md#pricing-and-limits + https://execution.market/skill.md#error-codes--all-17-up-front (429/503 rows) + https://docs.execution.market/for-agents/rest-api (Rate Limits table) + https://execution.market/auth.md (nonce endpoint) 
+corroboration: >-
+  Live unauthenticated GET https://api.execution.market/api/v1/health on 2026-09-19 returned x-ratelimit-remaining: 32,
+  x-ratelimit-tier: free, x-ratelimit-class: public, x-request-id, x-response-time. No x-ratelimit-limit or
+  x-ratelimit-reset header was present on that 200; skill.md tells clients to honour X-RateLimit-Reset on a 429, so
+  the reset header is expected on exhaustion. No 429 was provoked by this pipeline.
+confidence: medium
+confidence_note: >-
+  Two provider pages give different numbers on different axes: skill.md (v14.3.0, 2026-09-13) states per-operation
+  hourly limits; the docs REST page states per-minute limits by auth tier and still lists an "API Key" tier that
+  auth.md says is disabled in production. Both are recorded; the skill file is the more recent and is what agents are
+  told to refresh before every task.
+limit_count: 5
+scopes:
+  - scope: per-wallet (publisher)
+    surface: REST — task creation (POST /api/v1/tasks)
+    window: 1 hour
+    limit: 100
+    unit: requests
+    burst: null
+    status_on_exhaustion: 429
+    source: https://execution.market/skill.md#pricing-and-limits
+  - scope: per-wallet
+    surface: REST — queries (reads)
+    window: 1 hour
+    limit: 1000
+    unit: requests
+    status_on_exhaustion: 429
+    source: https://execution.market/skill.md#pricing-and-limits
+  - scope: per-wallet (publisher)
+    surface: REST — batch create (POST /api/v1/tasks/batch)
+    window: 1 hour
+    limit: 10
+    unit: requests
+    status_on_exhaustion: 429
+    source: https://execution.market/skill.md#pricing-and-limits
+    note: the spec summary for this operation currently reads "Batch Create Tasks (DISABLED)"
+  - scope: per-IP (anonymous) / per-key
+    surface: REST — all endpoints (docs REST page tiers)
+    window: 1 minute
+    limit: 'Anonymous 60 · API Key 600 · Admin unlimited'
+    unit: requests
+    status_on_exhaustion: 429
+    source: https://docs.execution.market/for-agents/rest-api
+    note: the API Key tier is documented but API keys are disabled in production (auth.md §4); treat the anonymous figure as the one an unsigned caller meets
+  - scope: per-IP
+    surface: GET /api/v1/auth/erc8128/nonce
+    window: unspecified
+    limit: unspecified ("rate-limited per IP")
+    status_on_exhaustion: 429
+    source: https://execution.market/auth.md
+  - scope: per-seller
+    surface: service listings (POST /api/v1/services)
+    window: n/a (cap, not a window)
+    limit: 20 active listings
+    status_on_exhaustion: 429
+    remediation: PATCH one listing to paused
+    source: https://execution.market/skill.md#error-codes--all-17-up-front
+headers:
+  - name: x-ratelimit-remaining
+    observed: true
+    observed_value: 32
+    note: present on a 200 from an anonymous call
+  - name: x-ratelimit-tier
+    observed: true
+    observed_value: free
+  - name: x-ratelimit-class
+    observed: true
+    observed_value: public
+  - name: X-RateLimit-Reset
+    observed: false
+    documented: true
+    note: skill.md — "Honour X-RateLimit-Reset, back off with jitter" on a 429
+  - name: Retry-After
+    observed: false
+    documented: true
+    note: served on 503 fail-closed responses (identity_check_unavailable, nonce_store_unavailable, …); re-send the SAME request
+  - name: x-request-id
+    observed: true
+    note: correlation id on every response (quote alongside detail.ref)
+exhaustion:
+  status: 429
+  body: FastAPI detail envelope; skill.md says the 429 is non-terminal
+  client_guidance: honour X-RateLimit-Reset, exponential backoff with jitter; for the listing cap pause a listing instead of retrying

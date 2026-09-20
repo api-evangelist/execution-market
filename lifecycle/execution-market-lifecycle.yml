@@ -1,0 +1,66 @@
+generated: '2026-09-19'
+method: searched
+source: https://execution.market/skill/CHANGELOG.md + https://execution.market/skill.md + https://docs.execution.market/project/roadmap + openapi/_original/execution-market-openapi.json + live GET https://api.execution.market/api/v1/version
+versioning:
+  scheme: path-version + build-stamped
+  path_segment: /api/v1
+  spec_declared: '2.0.0'
+  build_version_endpoint:
+    url: https://api.execution.market/api/v1/version
+    observed: '{"version":"2026-09-18T19:09:05Z","git_sha_short":"45219c8","component":"mcp-server","environment":"production"}'
+    also: https://api.execution.market/api/v1/version/all (all component versions)
+  skill_file_version: '14.3.0 (2026-09-13) — the agent procedure carries its own semver and instructs agents to re-fetch it before every task'
+  notes: >-
+    The REST path is pinned at /api/v1 and has not moved; changes ship continuously under it and are dated in the skill
+    changelog rather than by API version. The OpenAPI info.version is 2.0.0. Bearer (OAuth) callers are told three scopes are
+    "refused for bearer tokens in v1", which is the only forward-looking version reference located.
+changelog:
+  url: https://execution.market/skill/CHANGELOG.md
+  artifact: changelog/execution-market-changelog.yml
+  format: Markdown, one dated row per version in an index table plus full entries; bilingual (English / Spanish)
+  cadence_observed: '39 versions between 2026-08-24 and 2026-09-13 (roughly two per day)'
+status_page:
+  url: null
+  documented: false
+  machine_readable_health:
+    - url: https://api.execution.market/api/v1/health
+      status: 200
+      note: JSON liveness/readiness with component stats (reputation reconciler, Solana channel limits); listed as the `status` link in the RFC 9727 api-catalog
+    - url: https://mcp.execution.market/health
+      status: 200
+      note: '{"status":"healthy","probe":"liveness","version":"1.0.0"}'
+  notes: >-
+    No status page (no status.execution.market, no third-party status host named anywhere in the docs, llms.txt or skill
+    files). Health endpoints exist and are advertised through the api-catalog; they are not an incident/status page.
+    No StatusPage pointer is emitted.
+deprecation:
+  policy_documented: false
+  sunset_headers: not documented (no Deprecation/Sunset header in any response schema or docs text)
+  deprecated_operations:
+    - operationId: release_to_worker_api_v1_escrow_release_post
+      method: POST
+      path: /api/v1/escrow/release
+      note: 'deprecated: true in the spec; the approve call now settles the payout in the same request (skill.md STEP 5)'
+    - operationId: create_h2a_task_api_v1_h2a_tasks_post
+      method: POST
+      path: /api/v1/h2a/tasks
+      note: 'deprecated: true; summary says "deprecated alias of /api/v1/publish"'
+  retired_surfaces:
+    - name: Legacy Escrow contract (chamba-escrow) v1.4.0
+      doc: https://docs.execution.market/contracts/chamba-escrow
+      note: marked DEPRECATED in the docs index; superseded by x402r AuthCaptureEscrow
+    - name: em-plugin-sdk legacy 410 endpoints
+      note: the Plugin SDK page says client.escrow carries "legacy 410 endpoints, documented per method" — retired routes answer 410 Gone
+  notes: >-
+    Two operations carry deprecated: true and one contract is documented as deprecated, but there is no published
+    deprecation POLICY (notice period, sunset headers, support window). A Deprecation pointer is NOT emitted because the
+    check reads a policy, not an inventory.
+sla:
+  documented: false
+  notes: No uptime SLA, support SLA or error budget is published. Webhook delivery has a stated retry policy (see asyncapi/).
+support_lifetime:
+  stated: null
+  notes: No support period is stated for any API version.
+observed_change_cadence:
+  window: '2026-08-24 to 2026-09-18'
+  evidence: 39 dated skill versions; api/v1/version build stamp 2026-09-18T19:09:05Z one day before this probe

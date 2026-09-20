@@ -1,0 +1,108 @@
+generated: '2026-09-19'
+method: probed
+source: https://api.execution.market/.well-known/agent-card.json
+note: Same 5,808-byte body is served on api.execution.market, execution.market, www.execution.market, mcp.execution.market
+  and auth.execution.market at BOTH /.well-known/agent-card.json and the legacy /.well-known/agent.json (byte-identical,
+  cmp-verified). The api host is recorded as canonical because the card url and every additionalInterface point
+  at it, and the api host returns a hard 404 on a negative-control path (execution.market is an SPA catch-all that
+  200s HTML on unknown paths, but serves real JSON here).
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: api.execution.market
+  also_served:
+  - host: api.execution.market
+    paths:
+    - /.well-known/agent-card.json
+    - /.well-known/agent.json
+    status: 200
+  - host: execution.market
+    paths:
+    - /.well-known/agent-card.json
+    - /.well-known/agent.json
+    status: 200
+  - host: www.execution.market
+    paths:
+    - /.well-known/agent-card.json
+    - /.well-known/agent.json
+    status: 200
+  - host: mcp.execution.market
+    paths:
+    - /.well-known/agent-card.json
+    - /.well-known/agent.json
+    status: 200
+  - host: auth.execution.market
+    paths:
+    - /.well-known/agent-card.json
+    - /.well-known/agent.json
+    status: 200
+  registry_listing: https://a2aregistry.org (harvest source, 2026-09-19)
+conformance:
+  spec: A2A 1.0.0
+  grade: conformant
+  protocol_version: 0.3.0
+  preferred_transport: JSONRPC
+  checks:
+    capabilities_is_object: true
+    protocolVersion_present: true
+    skills_is_array: true
+    preferredTransport_present: true
+    defaultInputModes_present: true
+    defaultOutputModes_present: true
+    additionalInterfaces_present: true
+    securitySchemes_present: true
+    provider_present: true
+  deviations: []
+  observations:
+  - capabilities.streaming=false; the description says the standard A2A message/stream method is not implemented
+    and a proprietary SSE endpoint (POST /a2a/v1/stream) carries real-time updates
+  - securitySchemes declares a non-registered HTTP auth scheme 'signature' (ERC-8128 / RFC 9421 HTTP Message Signatures
+    over EIP-191) — valid card shape, but no IANA-registered scheme name
+  response_header: 'x-a2a-protocol-version: 0.3.0'
+card:
+  name: Execution Market
+  url: https://api.execution.market/a2a/v1
+  version: 0.1.0
+  skills: 7
+  skill_ids:
+  - publish-task
+  - manage-tasks
+  - review-submissions
+  - worker-management
+  - batch-operations
+  - analytics
+  - payments
+  skill_names:
+  - Publish Task for Execution
+  - Manage Published Tasks
+  - Review and Approve Submissions
+  - Worker Assignment and Management
+  - Batch Task Operations
+  - Task Analytics and Reporting
+  - Payment Management
+  provider:
+    organization: Ultravioleta DAO
+    url: https://ultravioletadao.xyz
+    contactEmail: ultravioletadao@gmail.com
+  additional_interfaces:
+  - url: https://api.execution.market/a2a/v1
+    transport: JSONRPC
+  - url: https://api.execution.market/mcp
+    transport: STREAMABLE_HTTP
+  - url: https://api.execution.market/api/v1
+    transport: HTTP+JSON
+  security: erc8128 — HTTP Message Signatures (RFC 9421) signed with the agent wallet (EIP-191); API keys and JWTs
+    not accepted
+  file: execution-market-agent-card.json
+x-evidence:
+  fetched: '2026-09-19'
+  url: https://api.execution.market/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json
+  bytes: 5808
+  server: uvicorn
+  cache_control: public, max-age=3600
+x-negative-control:
+  url: https://api.execution.market/.well-known/execution-market-negative-control-9a1f3c7e.json
+  status: 404
+  note: api host does not path-echo; the card is a served document, not a catch-all

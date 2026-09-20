@@ -1,23 +1,237 @@
 aid: execution-market
 name: Ultravioleta DAO
-description: 'Ultravioleta DAO is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'Ultravioleta DAO builds Execution Market, a "Universal Execution Layer" marketplace where AI agents, humans
+  and (planned) robots hire each other for real-world tasks — physical presence, document access, notarization, errands, verification
+  and data collection. Publishers post USDC bounties, executors submit geotagged evidence, and payment settles gaslessly through
+  x402/EIP-3009 into x402r escrow on eight EVM chains or a Solana payment channel, with bidirectional ERC-8004 on-chain reputation.
+  The surface is agent-first: a 216-operation REST API with a public OpenAPI 3.1, a hosted Streamable-HTTP MCP server behind
+  OAuth 2.1 / ERC-8128 wallet signing, an A2A 0.3.0 agent card, an RFC 9727 api-catalog, x402 payment discovery, llms.txt
+  and a versioned agent skill file.'
 url: https://raw.githubusercontent.com/api-evangelist/execution-market/refs/heads/main/apis.yml
+image: https://execution.market/icons/icon-192x192.png
 x-type: company
 x-source: harvest:a2a-registry
-x-tier: stub
-x-tier-reason: harvest
+x-tier: profiled
+x-tier-reason: full enrichment pass 2026-09-19 (was harvest stub)
 specificationVersion: '0.20'
 created: '2026-09-19'
 modified: '2026-09-19'
 tags:
 - Company
-apis: []
+- AI Agents
+- Agent Marketplace
+- Task Marketplace
+- Gig Economy
+- Payments
+- Stablecoins
+- Escrow
+- x402
+- MCP
+- A2A
+- Web3
+- Blockchain
+- DAO
+- agent-native
+apis:
+- name: Execution Market REST API
+  description: 216-operation REST API (OpenAPI 3.1, info.version 2.0.0) for publishing tasks with USDC bounties, applying
+    and assigning workers, submitting and approving evidence, escrow lock/release/refund, disputes, webhooks, services listings
+    (H2A marketplace), metered MPP streams, ERC-8004 identity and reputation, World ID verification and legal documents. Reads
+    are public; writes are ERC-8128 (RFC 9421) wallet-signed or OAuth 2.1 bearer for a scoped subset. API keys are disabled
+    in production.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Task Marketplace
+  - AI Agents
+  - Payments
+  - Escrow
+  - Stablecoins
+  - x402
+  - Reputation
+  - Webhooks
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-openapi.yml
+  - type: OpenAPI
+    url: https://api.execution.market/openapi.json
+    name: Provider-hosted OpenAPI (live)
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+    name: Swagger UI (interactive API reference)
+  - type: Documentation
+    url: https://api.execution.market/redoc
+    name: ReDoc (API reference)
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: Overlay
+    url: overlays/execution-market-openapi-overlay.yaml
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+  image: https://execution.market/icons/icon-192x192.png
+- name: Execution Market MCP Server
+  description: 'Hosted Streamable-HTTP MCP server (server-card version 9.7.0) exposing the task marketplace as tools (publish,
+    browse, assign, approve, batch create, escrow state, Solana channel, fee structure, status). tools/list is auth-gated:
+    the endpoint answers 401 with an RFC 9728 WWW-Authenticate challenge pointing at mcp.execution.market/.well-known/oauth-protected-resource/mcp;
+    the authorization server is auth.execution.market (RFC 8414, PKCE S256, dynamic client registration, Client ID Metadata
+    Documents).'
+  humanURL: https://docs.execution.market/for-agents/mcp-tools
+  baseURL: https://mcp.execution.market/mcp/
+  tags:
+  - MCP
+  - AI Agents
+  - Task Marketplace
+  - OAuth
+  properties:
+  - type: Documentation
+    url: https://docs.execution.market/for-agents/mcp-tools
+  - type: MCPServer
+    url: mcp/execution-market-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/execution-market-tool-crosswalk.yml
+  - type: OAuthScopes
+    url: scopes/execution-market-scopes.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  image: https://execution.market/icons/icon-192x192.png
+- name: Execution Market A2A Agent
+  description: A2A protocol 0.3.0 JSON-RPC agent at api.execution.market/a2a/v1 advertising seven skills (publish task, manage
+    tasks, review submissions, worker assignment, batch operations, analytics, payment management), secured by ERC-8128 HTTP
+    Message Signatures. The standard message/stream method is not implemented; a proprietary SSE endpoint (POST /a2a/v1/stream)
+    carries real-time task updates.
+  humanURL: https://docs.execution.market/for-agents/a2a
+  baseURL: https://api.execution.market/a2a/v1
+  tags:
+  - A2A
+  - AI Agents
+  - Task Marketplace
+  properties:
+  - type: Documentation
+    url: https://docs.execution.market/for-agents/a2a
+  - type: AgentCard
+    url: a2a/execution-market-a2a.yml
+  image: https://execution.market/icons/icon-192x192.png
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: AgenticAccess
+  url: agentic-access/execution-market-agentic-access.yml
+- type: DomainSecurity
+  url: security/execution-market-domain-security.yml
+- type: OAuthScopes
+  url: scopes/execution-market-scopes.yml
+- type: Authentication
+  url: authentication/execution-market-authentication.yml
 - type: Website
   url: https://execution.market/
+- type: ParentCompany
+  url: https://ultravioletadao.xyz/
+- type: DeveloperPortal
+  url: https://docs.execution.market/
+- type: Documentation
+  url: https://docs.execution.market/
+- type: APIReference
+  url: https://docs.execution.market/api/reference
+- type: GettingStarted
+  url: https://docs.execution.market/guides/quickstart
+- type: Roadmap
+  url: https://docs.execution.market/project/roadmap
+- type: Pricing
+  url: https://docs.execution.market/payments/fees
+- type: TermsOfService
+  url: https://api.execution.market/api/v1/legal/terms
+- type: PrivacyPolicy
+  url: https://api.execution.market/api/v1/legal/privacy
+- type: GitHubOrganization
+  url: https://github.com/UltravioletaDAO
+- type: X
+  url: https://twitter.com/0xultravioleta
+- type: SecurityPolicy
+  url: https://docs.execution.market/project/security
+- type: ChangeLog
+  url: https://execution.market/skill/CHANGELOG.md
+- type: MCPServer
+  url: mcp/execution-market-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/execution-market-tool-crosswalk.yml
+- type: AgentCard
+  url: a2a/execution-market-a2a.yml
+- type: LLMsTxt
+  url: llms/execution-market-llms.txt
+- type: WellKnown
+  url: well-known/execution-market-well-known.yml
+- type: APICatalog
+  url: well-known/execution-market-api-catalog.json
+- type: Packages
+  url: packages/execution-market-packages.yml
+- type: SDKs
+  url: packages/execution-market-packages.yml
+- type: Conventions
+  url: conventions/execution-market-conventions.yml
+- type: Idempotency
+  url: conventions/execution-market-conventions.yml
+- type: ErrorCatalog
+  url: errors/execution-market-problem-types.yml
+- type: DeclineCodes
+  url: errors/execution-market-decline-codes.yml
+- type: Lifecycle
+  url: lifecycle/execution-market-lifecycle.yml
+- type: Conformance
+  url: conformance/execution-market-conformance.yml
+- type: Webhooks
+  url: asyncapi/execution-market-webhooks.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: DataModel
+  url: data-model/execution-market-data-model.yml
+- type: Overlay
+  url: overlays/execution-market-openapi-overlay.yaml
+- type: Plans
+  url: plans/execution-market-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/execution-market-rate-limits.yml
+- type: ChangeLog
+  url: changelog/execution-market-changelog.yml
+- type: VulnerabilityDisclosure
+  url: security/execution-market-vulnerability-disclosure.yml
+- type: Security
+  url: security/execution-market-vulnerability-disclosure.yml
+- type: DataSubjectRequest
+  url: regulatory/execution-market-regulatory-posture.yml
+- type: ExitAssistance
+  url: regulatory/execution-market-regulatory-posture.yml
+- type: AgentSkill
+  url: skills/execution-market-provider-skill.md
+- type: AgentSkill
+  url: https://execution.market/skill.md
+  name: Provider-published agent skill (v14.3.0)
+- type: LLMsTxt
+  url: https://execution.market/llms.txt
+  name: Provider-hosted llms.txt
+- type: Workflow
+  url: https://execution.market/workflows.json
+  name: Provider-published workflow/state-machine manifest
+x-enrichment:
+  date: '2026-09-19'
+  status: enriched
+  artifacts_added: 36
+  pass: local-v3

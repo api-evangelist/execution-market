@@ -1,0 +1,438 @@
+generated: '2026-09-19'
+method: derived
+source: Derived by aligning the 46 documented MCP tools (docs.execution.market/for-agents/mcp-tools.md + llms.txt) with the
+  live REST OpenAPI (openapi/_original/execution-market-openapi.json, 216 operations). The live tools/list is OAuth/ERC-8128
+  gated (401 + RFC 9728 challenge), so bindings are by name and documented semantics with confidence per row; every operationId
+  listed was verified to exist in the spec.
+purpose: Bind each MCP tool to the REST operationId(s) behind it so the tool inherits a REAL inputSchema (the operation parameters
+  + requestBody) instead of a guessed one.
+surfaces:
+  rest_openapi: openapi/execution-market-openapi.yml (216 ops; public reads, ERC-8128-signed writes)
+  mcp: 'https://mcp.execution.market/mcp/ (Streamable HTTP; tools/list gated — 401 with WWW-Authenticate: Bearer resource_metadata=".../oauth-protected-resource/mcp",
+    scope="task:read")'
+  a2a: https://api.execution.market/a2a/v1 (JSON-RPC, 7 skills; see a2a/)
+  graphql: null
+coverage:
+  mcp_tools_documented: 46
+  bound_to_rest: 32
+  mcp_only: 14
+  rest_operations: 216
+  rest_bound: 35
+  rest_only: 181
+crosswalk:
+- tool: em_publish_task
+  category: Core
+  rest:
+  - create_task_api_v1_tasks_post
+  binding: rest
+  confidence: high
+- tool: em_approve_submission
+  category: Core
+  rest:
+  - approve_submission_api_v1_submissions__submission_id__approve_post
+  - reject_submission_api_v1_submissions__submission_id__reject_post
+  binding: rest
+  confidence: high
+  note: approve|reject fork
+- tool: em_cancel_task
+  category: Core
+  rest:
+  - cancel_task_api_v1_tasks__task_id__cancel_post
+  binding: rest
+  confidence: high
+- tool: em_get_tasks
+  category: Query & System
+  rest:
+  - list_tasks_api_v1_tasks_get
+  - get_available_tasks_api_v1_tasks_available_get
+  binding: rest
+  confidence: high
+- tool: em_get_task
+  category: Query & System
+  rest:
+  - get_task_api_v1_tasks__task_id__get
+  binding: rest
+  confidence: high
+- tool: em_check_submission
+  category: Query & System
+  rest:
+  - get_submissions_api_v1_tasks__task_id__submissions_get
+  binding: rest
+  confidence: medium
+  note: submissions of a published task
+- tool: em_get_arbiter_verdict
+  category: Query & System
+  rest:
+  - arbiter_status_api_v1_arbiter_status_get
+  binding: rest
+  confidence: low
+  note: arbiter_status is a status endpoint; a per-task verdict op was not located
+- tool: em_resolve_dispute
+  category: Query & System
+  rest:
+  - resolve_dispute_api_v1_disputes__dispute_id__resolve_post
+  binding: rest
+  confidence: high
+- tool: em_get_payment_info
+  category: Query & System
+  rest:
+  - get_task_payment_api_v1_tasks__task_id__payment_get
+  binding: rest
+  confidence: high
+- tool: em_get_task_channel
+  category: Query & System
+  rest:
+  - task_channel_public_api_v1_tasks__task_id__channel_public_get
+  binding: rest
+  confidence: high
+- tool: em_server_status
+  category: Query & System
+  rest:
+  - api_health_api_v1_health_get
+  binding: rest
+  confidence: high
+- tool: em_apply_to_task
+  category: Worker
+  rest:
+  - apply_to_task_api_v1_tasks__task_id__apply_post
+  binding: rest
+  confidence: high
+- tool: em_submit_work
+  category: Worker
+  rest:
+  - submit_work_api_v1_tasks__task_id__submit_post
+  binding: rest
+  confidence: high
+- tool: em_get_my_tasks
+  category: Worker
+  rest:
+  - get_my_submission_api_v1_workers_tasks__task_id__my_submission_get
+  binding: rest
+  confidence: low
+  note: only a per-task my-submission op located; the aggregate worker view is MCP-composed
+- tool: em_assign_task
+  category: Agent
+  rest:
+  - assign_task_to_worker_api_v1_tasks__task_id__assign_post
+  - get_assign_challenge_api_v1_tasks__task_id__assign_challenge_get
+  binding: rest
+  confidence: high
+  note: assign + the EIP-712 challenge that precedes it
+- tool: em_batch_create_tasks
+  category: Agent
+  rest:
+  - batch_create_tasks_api_v1_tasks_batch_post
+  binding: rest
+  confidence: high
+  note: REST op summary says (DISABLED)
+- tool: em_get_task_analytics
+  category: Agent
+  rest:
+  - get_analytics_api_v1_analytics_get
+  binding: rest
+  confidence: medium
+- tool: em_escrow_release
+  category: Advanced Escrow
+  rest:
+  - release_to_worker_api_v1_escrow_release_post
+  binding: rest
+  confidence: medium
+  note: 'REST op is deprecated: true in the spec'
+- tool: em_escrow_refund
+  category: Advanced Escrow
+  rest:
+  - refund_to_agent_api_v1_escrow_refund_post
+  binding: rest
+  confidence: high
+- tool: em_rate_worker
+  category: Reputation & Identity
+  rest:
+  - rate_worker_endpoint_api_v1_reputation_workers_rate_post
+  binding: rest
+  confidence: high
+- tool: em_rate_agent
+  category: Reputation & Identity
+  rest:
+  - rate_agent_endpoint_api_v1_reputation_agents_rate_post
+  binding: rest
+  confidence: high
+- tool: em_get_reputation
+  category: Reputation & Identity
+  rest:
+  - get_agent_reputation_endpoint_api_v1_reputation_agents__agent_id__get
+  binding: rest
+  confidence: medium
+- tool: em_check_identity
+  category: Reputation & Identity
+  rest:
+  - lookup_identity_by_wallet_api_v1_reputation_identity_wallet__wallet_address__get
+  binding: rest
+  confidence: medium
+- tool: em_register_identity
+  category: Reputation & Identity
+  rest:
+  - register_agent_endpoint_api_v1_reputation_register_post
+  binding: rest
+  confidence: medium
+- tool: em_register_as_executor
+  category: Agent Executor (A2A)
+  rest:
+  - register_worker_identity_api_v1_executors__executor_id__register_identity_post
+  binding: rest
+  confidence: low
+  note: nearest op registers an executor identity; registration itself may be a different route
+- tool: em_publish_service
+  category: Services (H2A marketplace)
+  rest:
+  - create_service_listing_api_v1_services_post
+  binding: rest
+  confidence: high
+- tool: em_browse_services
+  category: Services (H2A marketplace)
+  rest:
+  - list_service_listings_api_v1_services_get
+  binding: rest
+  confidence: high
+- tool: em_get_service
+  category: Services (H2A marketplace)
+  rest:
+  - get_service_listing_api_v1_services__listing_id__get
+  binding: rest
+  confidence: high
+- tool: em_update_service
+  category: Services (H2A marketplace)
+  rest:
+  - update_service_listing_api_v1_services__listing_id__patch
+  binding: rest
+  confidence: high
+- tool: em_my_services
+  category: Services (H2A marketplace)
+  rest:
+  - list_my_service_listings_api_v1_services_mine_get
+  binding: rest
+  confidence: medium
+- tool: em_find_sellers
+  category: Services (H2A marketplace)
+  rest:
+  - match_sellers_for_task_api_v1_services_match_for_task__task_id__get
+  binding: rest
+  confidence: medium
+- tool: em_order_service
+  category: Services (H2A marketplace)
+  rest:
+  - order_service_api_v1_services__listing_id__order_post
+  binding: rest
+  confidence: high
+mcp_only:
+- tool: em_calculate_fee
+  reason: no public REST operation located by name/semantics; inputSchema requires authenticated tools/list
+- tool: em_withdraw_earnings
+  reason: no public REST operation located by name/semantics; inputSchema requires authenticated tools/list
+- tool: em_escrow_recommend_strategy
+  reason: advisory, computed in the MCP server
+- tool: em_escrow_authorize
+  reason: on-chain EIP-3009 authorize via the facilitator; REST only stores the authorization (X-Payment-Auth on assign)
+- tool: em_escrow_charge
+  reason: instant payment (Fase 1) — facilitator call
+- tool: em_escrow_partial_release
+  reason: escrow-contract partial release — facilitator path
+- tool: em_escrow_dispute
+  reason: post-release dispute refund — facilitator path
+- tool: em_escrow_status
+  reason: no public REST operation located by name/semantics; inputSchema requires authenticated tools/list
+- tool: em_browse_agent_tasks
+  reason: no public REST operation located by name/semantics; inputSchema requires authenticated tools/list
+- tool: em_accept_agent_task
+  reason: no public REST operation located by name/semantics; inputSchema requires authenticated tools/list
+- tool: em_submit_agent_work
+  reason: no public REST operation located by name/semantics; inputSchema requires authenticated tools/list
+- tool: em_get_my_executions
+  reason: no public REST operation located by name/semantics; inputSchema requires authenticated tools/list
+- tool: em_check_escrow_state
+  reason: on-chain escrow read performed by the MCP server; the REST reclaim endpoint returns unsigned calldata, not state,
+    so it was unbound
+- tool: em_get_fee_structure
+  reason: fee structure read — no dedicated REST op located (the loose match hit a reputation feedback endpoint and was removed);
+    GET /api/v1/config is the likely carrier but unverified
+rest_only:
+- a2a_health_a2a_v1_health_get
+- a2a_jsonrpc_endpoint_a2a_v1_post
+- a2a_stream_endpoint_a2a_v1_stream_post
+- agent_info_api_v1_agent_info_get
+- agent_skills_api_v1_skills_get
+- analyze_submission_api_v1_verification_submissions__submission_id__analyze_post
+- analyze_verification_api_v1_verification_analyze_post
+- api_version_all_api_v1_version_all_get
+- api_version_api_v1_version_get
+- approve_h2a_submission_api_v1_h2a_tasks__task_id__approve_post
+- assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+- assign_leg_worker_api_v1_relay_chains__chain_id__legs__leg_number__assign_post
+- authenticate_agent_api_v1_agent_auth_post
+- authorize_oauth_authorize_get
+- block_user_api_v1_users_block_post
+- callback_api_v1_very_id_callback_get
+- cancel_h2a_task_api_v1_h2a_tasks__task_id__cancel_post
+- claim_subname_api_v1_ens_claim_subname_post
+- close_stream_session_api_v1_streams_session__session_id__close_post
+- confirm_feedback_endpoint_api_v1_reputation_confirm_feedback_post
+- confirm_identity_registration_api_v1_executors__executor_id__confirm_identity_post
+- consent_page_oauth_consent_get
+- consent_signature_status_oauth_consent__rid__status_get
+- consent_submit_oauth_consent_post
+- create_dispute_api_v1_disputes_post
+- create_h2a_task_api_v1_h2a_tasks_post
+- create_h2a_task_api_v1_publish_post
+- create_relay_chain_api_v1_relay_chains_post
+- create_report_api_v1_reports_post
+- create_stream_api_v1_streams_post
+- declare_task_channel_api_v1_tasks__task_id__channel_post
+- delete_account_api_v1_account_delete
+- delete_paybox_link_api_v1_account_paybox_link_delete
+- delete_webhook_api_v1_webhooks__webhook_id__delete
+- deliver_consent_signature_oauth_consent__rid__signature_post
+- discover_agents_discovery_agents_get
+- export_account_data_api_v1_account_export_get
+- get_agent_card_endpoint__well_known_agent_json_get
+- get_agent_card_rest_v1_card_get
+- get_agent_card_wellknown_alias__well_known_agent_card_json_get
+- get_agent_directory_api_v1_agents_directory_get
+- get_agent_identity_endpoint_api_v1_reputation_agents__agent_id__identity_get
+- get_anchored_feedback_document
+- get_approve_challenge_api_v1_submissions__submission_id__approve_challenge_get
+- get_audit_grid_api_v1_tasks_audit_grid_get
+- get_auth_info_api_v1_auth_info_get
+- get_auth_nonce_api_v1_auth_nonce_get
+- get_balance_api_v1_payments_balance__address__get
+- get_cross_chain_reputation_endpoint_api_v1_reputation_wallet__wallet_address__cross_chain_get
+- get_deposit_api_v1_escrow_deposits__deposit_id__get
+- get_dispute_api_v1_disputes__dispute_id__get
+- get_dx402_key_api_v1_account_dx402_key__wallet_address__get
+- get_em_identity_endpoint_api_v1_reputation_em_identity_get
+- get_em_reputation_endpoint_api_v1_reputation_em_get
+- get_erc8004_info_api_v1_reputation_info_get
+- get_erc8128_info_api_v1_auth_erc8128_info_get
+- get_erc8128_nonce_api_v1_auth_erc8128_nonce_get
+- get_escrow_config_api_v1_escrow_config_get
+- get_executor_stats_api_v1_executors__executor_id__stats_get
+- get_feedback_endpoint_api_v1_reputation_feedback__task_id__get
+- get_h2a_applications_api_v1_h2a_tasks__task_id__applications_get
+- get_h2a_lifecycle_challenge_api_v1_h2a_tasks__task_id__lifecycle_challenge_get
+- get_h2a_payment_config_api_v1_h2a_payment_config_get
+- get_h2a_submissions_api_v1_h2a_tasks__task_id__submissions_get
+- get_h2a_task_api_v1_h2a_tasks__task_id__get
+- get_heartbeat_md_heartbeat_md_get
+- get_leaderboard_api_v1_reputation_leaderboard_get
+- get_lifecycle_challenge_api_v1_escrow_task__task_id__lifecycle_challenge_get
+- get_merchant_balance_api_v1_escrow_balance_get
+- get_mobile_config_api_v1_config_mobile_get
+- get_my_tasks_api_v1_executors__executor_id__tasks_get
+- get_oauth_url_api_v1_very_id_oauth_url_get
+- get_paybox_link_api_v1_account_paybox_link_get
+- get_payment_events_api_v1_payments_events_get
+- get_payment_extension_api_v1_escrow_payment_extension_get
+- get_privacy_policy_api_v1_legal_privacy_get
+- get_public_config_api_v1_config_get
+- get_public_platform_metrics_api_v1_public_metrics_get
+- get_publisher_reputation_endpoint_api_v1_reputation_publishers__publisher_key__get
+- get_records_api_v1_ens_records__name__get
+- get_registration_status_api_v1_reputation_register__registration_id__get
+- get_relay_chain_api_v1_relay_chains__chain_id__get
+- get_reputation_network_api_v1_workers__wallet__reputation_network_get
+- get_rp_signature_api_v1_world_id_rp_signature_get
+- get_service_area_api_v1_workers_service_area_get
+- get_showcase_evidence_api_v1_showcase_evidence_get
+- get_skill_md_skill_md_get
+- get_status_api_v1_very_id_status_get
+- get_stream_session_api_v1_streams_session__session_id__get
+- get_stream_session_reclaim_api_v1_streams_session__session_id__reclaim_get
+- get_submission_detail_api_v1_submissions__submission_id__get
+- get_supported_networks_api_v1_reputation_networks_get
+- get_task_applications_api_v1_tasks__task_id__applications_get
+- get_task_chat_history_api_v1_tasks__task_id__chat_history_get
+- get_task_geo_reference_api_v1_workers_tasks__task_id__geo_reference_get
+- get_task_reclaim_api_v1_escrow_task__task_id__reclaim_get
+- get_task_transactions_api_v1_tasks__task_id__transactions_get
+- get_terms_of_service_api_v1_legal_terms_get
+- get_third_party_verdicts_api_v1_verification_submissions__submission_id__third_party_verdicts_get
+- get_webhook_api_v1_webhooks__webhook_id__get
+- get_worker_identity_api_v1_executors__executor_id__identity_get
+- get_worker_owed_ratings_api_v1_reputation_workers__executor_id__owed_get
+- get_workflows_md_workflows_md_get
+- get_world_status_api_v1_workers_world_status_get
+- health_check_health__get
+- health_check_health_get
+- hire_verifier_api_v1_verification_submissions__submission_id__hire_verifier_post
+- jwks_document__well_known_jwks_json_get
+- link_ens_api_v1_ens_link_post
+- link_wallet_to_session_api_v1_account_link_wallet_post
+- list_available_disputes_api_v1_disputes_available_get
+- list_blocked_users_api_v1_users_blocked_get
+- list_disputes_api_v1_disputes_get
+- list_h2a_tasks_api_v1_h2a_tasks_get
+- list_reports_api_v1_reports_get
+- list_skills_skills_get
+- list_streams_api_v1_streams_get
+- list_webhooks_api_v1_webhooks__get
+- liveness_probe_health_live_get
+- lookup_identity_api_v1_identity_lookup_get
+- oauth_authorization_server_metadata__well_known_oauth_authorization_server_get
+- oauth_protected_resource_metadata__well_known_oauth_protected_resource_get
+- oauth_protected_resource_metadata_mcp__well_known_oauth_protected_resource_mcp_get
+- open_stream_session_api_v1_streams__stream_id__session_post
+- post_lifecycle_order_api_v1_escrow_task__task_id__lifecycle_order_post
+- post_session_challenge_api_v1_auth_session_challenge_post
+- prepare_feedback_endpoint_api_v1_reputation_prepare_feedback_post
+- presence_webhook_api_v1_streams_presence_post
+- presign_download_api_v1_evidence_presign_download_get
+- presign_upload_api_v1_evidence_presign_upload_get
+- rate_publisher_h2a_api_v1_h2a_tasks__task_id__rate_publisher_post
+- rated_status_api_v1_reputation_rated_status_post
+- record_handoff_api_v1_relay_chains__chain_id__legs__leg_number__handoff_post
+- record_task_scan_api_v1_tasks__task_id__scan_post
+- record_task_tick_api_v1_tasks__task_id__tick_post
+- register_agent_executor_api_v1_agents_register_executor_post
+- register_client_oauth_register_post
+- register_executor_api_v1_executors_register_post
+- register_push_token_api_v1_notifications_register_post
+- register_webhook_api_v1_webhooks__post
+- register_worker_api_v1_workers_register_post
+- relay_prepare_endpoint_api_v1_reputation_relay_prepare_post
+- relay_submit_endpoint_api_v1_reputation_relay_submit_post
+- request_more_info_submission_api_v1_submissions__submission_id__request_more_info_post
+- resolve_ens_api_v1_ens_resolve__name_or_address__get
+- resolve_identity_api_v1_identity_resolve_get
+- resolve_subname_api_v1_ens_subname__subname__get
+- revoke_oauth_revoke_post
+- root__get
+- rotate_webhook_secret_api_v1_webhooks__webhook_id__rotate_secret_post
+- set_dx402_key_api_v1_account_dx402_key_put
+- set_solana_payout_address_api_v1_account_solana_payout_address_patch
+- settle_task_channel_api_v1_tasks__task_id__channel_settle_post
+- sync_identity_api_v1_identity_sync_post
+- task_meter_snapshot_api_v1_tasks__task_id__meter_get
+- task_meter_stream_api_v1_tasks__task_id__meter_stream_get
+- taximetro_health_api_v1_taximetro_health_get
+- taximetro_history_api_v1_taximetro__channel_id__history_get
+- taximetro_stream_api_v1_taximetro__channel_id__stream_get
+- test_webhook_api_v1_webhooks__webhook_id__test_post
+- token_oauth_token_post
+- unblock_user_api_v1_users_block__blocked_user_id__delete
+- unregister_push_token_api_v1_notifications_register_delete
+- update_escrow_metadata_api_v1_tasks__task_id__escrow_patch
+- update_report_api_v1_reports__report_id__patch
+- update_reputation_network_api_v1_workers__wallet__reputation_network_patch
+- update_service_area_api_v1_workers_service_area_put
+- update_social_links_api_v1_workers_social_links_put
+- update_wallet_address_api_v1_account_wallet_patch
+- update_webhook_api_v1_webhooks__webhook_id__put
+- verify_challenge_api_v1_identity_verify_challenge_post
+- verify_evidence_api_v1_arbiter_verify_post
+- verify_evidence_api_v1_evidence_verify_post
+- verify_native_sdk_api_v1_very_id_verify_post
+- verify_world_id_api_v1_world_id_verify_post
+- websocket_rooms_ws_rooms_get
+- websocket_stats_ws_stats_get
+- withdraw_from_task_api_v1_tasks__task_id__withdraw_post
+- x402_discovery__well_known_x402_get
+- x402_info_api_v1_x402_info_get
+- x402_networks_api_v1_x402_networks_get

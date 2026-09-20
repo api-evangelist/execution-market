@@ -1,0 +1,117 @@
+generated: '2026-09-19'
+method: searched
+source: openapi/execution-market-openapi.yml (oauthBearer flow scopes) + https://execution.market/skill/reference/oauth.md
+  + well-known/execution-market-auth-oauth-authorization-server.json (scopes_supported) + well-known/execution-market-mcp-oauth-protected-resource-mcp.json
+  (scopes_supported)
+schemes:
+- name: oauthBearer
+  source: openapi/execution-market-openapi.yml
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://auth.execution.market/oauth/authorize
+    tokenUrl: https://auth.execution.market/oauth/token
+  description: 'OAuth 2.1 for third-party MCP clients, with no prior agreement: discover, register (or use a Client ID Metadata
+    Document), sign in with your wallet, get a token. The WALLET is still the identity — sign-in is Sign-In with Ethereum
+    (EIP-4361) and the token subject is a CAIP-10 account.
+
+
+    Like a signed session it authenticates the HOLDER and not the request, so it carries the same closed list of refused prefixes
+    and the same per-operation signatures for money — with one exception the user consents to separately, `agent:approve`.
+    Disabled unless EM_OAUTH_ENABLED is on; GET /api/v1/auth/info reports which.'
+scopes:
+- scope: agent:approve
+  description: 'Approve a submission, which RELEASES the escrowed bounty to the worker. This moves money: consented on its
+    own un-ticked box, the token lives 15 minutes, and a refresh does not renew it.'
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: yes — separately consented; token lives 15 minutes; refresh does not renew it; per-approval and total caps
+    signed into the SIWE message
+  advertised_by:
+  - authorization-server metadata
+- scope: agent:publish
+  description: Publish tasks and service listings as you.
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: true
+  advertised_by:
+  - authorization-server metadata
+  - protected-resource metadata
+- scope: reputation:rate
+  description: 'Rate a counterparty. Refused for bearer tokens: a rating is an act of its author.'
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: 'no'
+  advertised_by:
+  - authorization-server metadata
+- scope: task:cancel
+  description: Cancel a task you published.
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: true
+  advertised_by:
+  - authorization-server metadata
+  - protected-resource metadata
+- scope: task:read
+  description: Read tasks, applications and submissions.
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: true
+  advertised_by:
+  - authorization-server metadata
+  - protected-resource metadata
+- scope: task:write
+  description: Edit a task you published, and assign a worker to it.
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: true
+  advertised_by:
+  - authorization-server metadata
+  - protected-resource metadata
+- scope: worker:apply
+  description: Apply to tasks as a worker on your behalf.
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: true
+  advertised_by:
+  - authorization-server metadata
+  - protected-resource metadata
+- scope: worker:submit
+  description: Submit completed work on your behalf. Refused for bearer tokens in v1.
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: no (v1)
+  advertised_by:
+  - authorization-server metadata
+- scope: worker:withdraw
+  description: Withdraw your earnings. Refused for bearer tokens.
+  flows:
+  - authorizationCode
+  sources:
+  - openapi/execution-market-openapi.yml
+  bearer_accepted: 'no'
+  advertised_by:
+  - authorization-server metadata
+docs: https://execution.market/skill/reference/oauth.md#the-nine-scopes
+notes:
+- The AS advertises nine scopes; the MCP protected-resource metadata advertises five (the bearer-usable subset minus agent:approve).
+  Three scopes (worker:submit, worker:withdraw, reputation:rate) answer 403 for ANY bearer whatever it holds — use ERC-8128
+  for those.
+- Default challenge scope on the MCP endpoint is task:read (observed WWW-Authenticate).
+- 'Step-up: an operation lacking scope answers 403 insufficient_scope naming the scope; re-authorize asking for that scope
+  PLUS the ones already held or the user loses the rest.'

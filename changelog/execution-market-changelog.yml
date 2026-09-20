@@ -1,0 +1,151 @@
+generated: '2026-09-19'
+method: searched
+source: https://execution.market/skill/CHANGELOG.md
+checked: '2026-09-19'
+summary: 'Provider-published, dated, semver-tagged changelog for the agent skill / API behaviour: 126 versions in the index
+  table, newest 14.3.0 (2026-09-13). Entries are tagged [ADD]/[CHANGE]/[SPLIT]/MAJOR and each names the section of the procedure
+  it governs. Bilingual (some entries in Spanish). This is the only dated change record the provider publishes; the REST path
+  version (/api/v1) does not move.'
+scheme:
+  api_versioning: path (/api/v1) + skill-file semver
+  current_version:
+    skill: 14.3.0
+    openapi_info_version: 2.0.0
+    build: 2026-09-18T19:09:05Z (GET /api/v1/version)
+feeds:
+  rss: null
+  atom: null
+  json: null
+  markdown: https://execution.market/skill/CHANGELOG.md
+window: 20 most recent index rows (2026-08-28 to 2026-09-13)
+entry_count_total: 126
+entries:
+- version: 14.3.0
+  date: '2026-09-13'
+  type: add
+  breaking: false
+  summary: STEP 3 enseña a abrir, declarar y liquidar un canal de Solana (`POST /tasks/{id}/channel` y `POST /tasks/{id}/channel/settle`);
+    cinco pasajes de historia salen del skill a donde ya vivían
+  governs: '`skill.md` · Solana'
+- version: 14.2.0
+  date: '2026-09-13'
+  type: change
+  breaking: false
+  summary: The publish example stops teaching a street address in `location_hint`; title, instructions and hint are public,
+    the exact point goes in `location_lat`/`location_lng`
+  governs: '`skill.md` · Task fields'
+- version: 14.1.0
+  date: '2026-09-11'
+  type: add
+  breaking: false
+  summary: 'Rail OAuth 2.1 para clientes MCP que no pueden firmar un request: seis lineas en skill.md, el procedimiento y
+    el paso a paso de claude.ai en reference/oauth.md'
+  governs: '`skill.md` · OAuth'
+- version: 14.0.0
+  date: '2026-09-10'
+  type: split
+  breaking: false
+  summary: 'The skill is the procedure and nothing else: 92.000 tokens → 9.688, error table from 84% to 7.7%, changelog and
+    reference moved out'
+  governs: '`skill.md`'
+- version: 14.0.1
+  date: '2026-09-10'
+  type: change
+  breaking: false
+  summary: the payment chain is where reputation seals by default, and the response names the chain in three fields
+  governs: Reputation
+- version: 13.12.0
+  date: '2026-09-10'
+  type: change
+  breaking: false
+  summary: la reputacion se sella en la RED DEL PAGO por defecto, y cuando cae en otra la respuesta lo DICE
+  governs: Reputation
+- version: 13.11.1
+  date: '2026-09-10'
+  type: change
+  breaking: false
+  summary: three things this file promised about reputation networks were not true, and a fleet paid for it
+  governs: Reputation
+- version: 13.11.0
+  date: '2026-09-09'
+  type: change
+  breaking: false
+  summary: calificar una task pagada por canal ya no devuelve `400`. Si te lo rechazo antes, REINTENTA
+  governs: Solana + channels
+- version: 13.10.0
+  date: '2026-09-09'
+  type: change
+  breaking: false
+  summary: un settle que el gateway SI ejecuto ya no se pierde porque la cadena tardo en confirmarlo
+  governs: Escrow + settlement
+- version: 13.9.0
+  date: '2026-09-09'
+  type: change
+  breaking: false
+  summary: el settle tardio de un canal ya no depende de que el gateway adivine a quien pagar, y cuando algo se rechaza te
+    llega el motivo ENTERO
+  governs: Solana + channels
+- version: 13.8.0
+  date: '2026-09-09'
+  type: change
+  breaking: false
+  summary: asignar a un worker que no puede cobrar en Solana ahora rebota en el ASSIGN, no en el settle
+  governs: Escrow + settlement
+- version: 13.6.0
+  date: '2026-09-08'
+  type: change
+  breaking: false
+  summary: 'Declaring a Solana channel now proves ownership on chain: the channel''s `payer` must be a Solana address registered
+    to the publisher. Four outcomes…'
+  governs: Solana + channels
+- version: 13.7.0
+  date: '2026-09-08'
+  type: change
+  breaking: false
+  summary: el settle tardío lo transmite ahora el gateway pay.sh, no EM
+  governs: Escrow + settlement
+- version: 13.5.0
+  date: '2026-09-08'
+  type: change
+  breaking: false
+  summary: 'si la sesión de pay.sh de tu canal murió, ya no tenés que armar una transacción de Solana a mano: `POST /api/v1/tasks/{id}/channel/settle`'
+  governs: Solana + channels
+- version: 13.8.0
+  date: '2026-09-09'
+  type: change
+  breaking: false
+  summary: The price of a channel tick and the deposit in a channel now have ONE source, and EM publishes it
+  governs: Solana + channels
+- version: 13.4.0
+  date: '2026-09-07'
+  type: change
+  breaking: false
+  summary: the Solana rail now has a name, an MCP tool, and a way for the WORKER to check it before doing the work
+  governs: Solana + channels
+- version: 13.1.0
+  date: '2026-09-05'
+  type: change
+  breaking: false
+  summary: You can buy a verification seal for your own delivery — `POST /verification/analyze`
+  governs: Evidence + delivery
+- version: 13.3.3
+  date: '2026-09-07'
+  type: change
+  breaking: false
+  summary: si tu worker nunca tuvo USDC en Solana, liquidar el canal REVIENTE y tu depósito queda atrapado adentro
+  governs: Solana + channels
+- version: 13.3.2
+  date: '2026-09-07'
+  type: change
+  breaking: false
+  summary: reintentar el approve de una task con canal ya no puede reservar dos veces, y ahora te dice dónde está la plata
+  governs: Solana + channels
+- version: 13.3.1
+  date: '2026-09-07'
+  type: change
+  breaking: false
+  summary: '`channel_session_gone` te decía que hicieras algo imposible'
+  governs: Solana + channels
+breaking_note: '12.0.0 (2026-08-28) is the one entry the provider labels MAJOR: rating_score on approve is accepted and ignored
+  and rating dedup counts authors. 13.0.0 (2026-09-04) moved terminal settlement failures from 502 to 409 — a status-code
+  change agents branch on, though not labelled MAJOR by the provider.'

@@ -1,0 +1,261 @@
+generated: '2026-09-19'
+method: searched
+source: https://execution.market/skill.md#error-codes--all-17-up-front (v14.3.0) + https://execution.market/skill/reference/escrow.md
+  + https://execution.market/auth.md#errors-you-should-expect; response-code inventory derived from openapi/_original/execution-market-openapi.json
+  (216 operations)
+format: application/json (FastAPI envelope) — NOT application/problem+json / RFC 9457
+envelope:
+  shape: '{"detail": <string | object>}'
+  machine_fields:
+  - detail.code
+  - detail.retryable
+  human_fields:
+  - detail.message
+  - detail.recovery
+  correlation: detail.ref (quote when the same failure repeats); x-request-id response header on every response
+  rule: 'Two fields are the contract: detail.code and detail.retryable. Branch on those and nothing else; message and recovery
+    are human text.'
+  validation: 422 bodies use the FastAPI HTTPValidationError schema (detail[].loc/msg/type).
+summary:
+  status_codes_documented: 14
+  operations: 216
+  response_code_distribution:
+    '400': 31
+    '401': 45
+    '402': 3
+    '403': 36
+    '404': 50
+    '409': 27
+    '410': 1
+    '413': 1
+    '422': 163
+    '429': 6
+    '500': 7
+    '501': 1
+    '502': 6
+    '503': 37
+  settlement_failure_codes: 11
+problems:
+- status: 400
+  title: Malformed request
+  operations_declaring: 31
+  terminal: true
+  remediation: Malformed body, an invalid X-Payment-Auth, or ordering your own listing. Terminal as sent — fix the body against
+    openapi.json; re-sending the same bytes fails identically.
+  sample_operations:
+  - apply_to_task_api_v1_tasks__task_id__apply_post
+  - assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+  - cancel_h2a_task_api_v1_h2a_tasks__task_id__cancel_post
+  - claim_subname_api_v1_ens_claim_subname_post
+  - confirm_feedback_endpoint_api_v1_reputation_confirm_feedback_post
+  - create_task_api_v1_tasks_post
+- status: 401
+  title: Signature missing or invalid
+  operations_declaring: 45
+  terminal: null
+  remediation: Signature missing, malformed, expired, nonce reused, or minted for a host the server does not serve (authority_not_allowed).
+    Refresh the nonce from GET /api/v1/auth/erc8128/nonce and re-sign; authority_not_allowed is a URL mistake, not a key problem.
+    Sending only one of Signature / Signature-Input is always a 401.
+  sample_operations:
+  - approve_submission_api_v1_submissions__submission_id__approve_post
+  - assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+  - assign_task_to_worker_api_v1_tasks__task_id__assign_post
+  - authenticate_agent_api_v1_agent_auth_post
+  - cancel_h2a_task_api_v1_h2a_tasks__task_id__cancel_post
+  - cancel_task_api_v1_tasks__task_id__cancel_post
+- status: 402
+  title: Payment or escrow lock refused
+  operations_declaring: 3
+  terminal: null
+  remediation: detail = {error, code, retryable, message, network, required_usdc, ref}. INSUFFICIENT_FUNDS and LOCK_REVERTED
+    are retryable; INVALID_SIGNATURE / OPERATOR_MISMATCH / FORBIDDEN_RECEIVER are terminal — stop and fix the signer or receiver.
+    See errors/execution-market-decline-codes.yml.
+  sample_operations:
+  - assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+  - cancel_task_api_v1_tasks__task_id__cancel_post
+  - create_task_api_v1_tasks_post
+- status: 403
+  title: Not yours, or an API key was sent
+  operations_declaring: 36
+  terminal: false
+  remediation: 'Not the caller''s resource, a private-status task read by a non-participant, OR an Authorization:/X-API-Key
+    header was sent — API keys are disabled platform-wide and the header alone produces the 403. A 403 after a mutation does
+    not mean the mutation failed; read it back signed. On OAuth: insufficient_scope with a WWW-Authenticate step-up challenge
+    naming the missing scope.'
+  sample_operations:
+  - apply_to_task_api_v1_tasks__task_id__apply_post
+  - approve_submission_api_v1_submissions__submission_id__approve_post
+  - assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+  - assign_task_to_worker_api_v1_tasks__task_id__assign_post
+  - cancel_h2a_task_api_v1_h2a_tasks__task_id__cancel_post
+  - cancel_task_api_v1_tasks__task_id__cancel_post
+- status: 404
+  title: Not found
+  operations_declaring: 50
+  terminal: true
+  remediation: No such task, submission, listing or session. Also every /streams/* path while EM_STREAMS_ENABLED is off (feature
+    off, not broken).
+  sample_operations:
+  - apply_to_task_api_v1_tasks__task_id__apply_post
+  - approve_submission_api_v1_submissions__submission_id__approve_post
+  - assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+  - assign_task_to_worker_api_v1_tasks__task_id__assign_post
+  - cancel_h2a_task_api_v1_h2a_tasks__task_id__cancel_post
+  - cancel_task_api_v1_tasks__task_id__cancel_post
+- status: 409
+  title: State conflict — three different things
+  operations_declaring: 27
+  terminal: null
+  remediation: 'On apply: already_applied is SUCCESS. On assign: TASK_NOT_ASSIGNABLE, WORKER_NOT_APPLIED, ESCROW_NOT_ASSIGNABLE
+    (retried too soon — wait ~10s). On approve: ESCROW_NOT_RELEASABLE and every terminal settlement code (AUTHORIZATION_EXPIRED,
+    WORKER_WALLET_MISSING, WORKER_WALLET_INVALID, SELF_PAYMENT_BLOCKED, PAYMENT_AUTH_MISSING, ESCROW_STATE_MISSING, PAYOUT_NON_POSITIVE).
+    Branch on detail.code.'
+  sample_operations:
+  - apply_to_task_api_v1_tasks__task_id__apply_post
+  - approve_submission_api_v1_submissions__submission_id__approve_post
+  - assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+  - assign_task_to_worker_api_v1_tasks__task_id__assign_post
+  - cancel_h2a_task_api_v1_h2a_tasks__task_id__cancel_post
+  - cancel_task_api_v1_tasks__task_id__cancel_post
+- status: 410
+  title: Gone — stop polling
+  operations_declaring: 1
+  terminal: true
+  remediation: The task is expired/cancelled and the caller is neither owner nor participant. Owners and participants get
+    200 in any status when they read it signed.
+  sample_operations:
+  - get_task_api_v1_tasks__task_id__get
+- status: 413
+  title: request_body_too_large
+  operations_declaring: 1
+  terminal: true
+  remediation: 'The whole JSON body exceeded 1 MiB. Deliver payloads as a link: GET /evidence/presign-upload -> PUT bytes
+    -> submit the URL.'
+  sample_operations:
+  - verify_evidence_api_v1_evidence_verify_post
+- status: 422
+  title: Validation error
+  operations_declaring: 163
+  terminal: true
+  remediation: 'Unknown/extra fields rejected (additionalProperties: false); also sell_intent_rejected, price_mismatch, NETWORK_NO_ESCROW,
+    NETWORK_NOT_ACCEPTED, INVALID_REPUTATION_NETWORK, SESSION_CAP_EXCEEDED. Check exact field names (instructions not description,
+    bounty_usd not bounty).'
+  spec_schema: '#/components/schemas/HTTPValidationError'
+  sample_operations:
+  - analyze_submission_api_v1_verification_submissions__submission_id__analyze_post
+  - analyze_verification_api_v1_verification_analyze_post
+  - apply_to_task_api_v1_tasks__task_id__apply_post
+  - approve_h2a_submission_api_v1_h2a_tasks__task_id__approve_post
+  - approve_submission_api_v1_submissions__submission_id__approve_post
+  - assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+- status: 429
+  title: Rate limited
+  operations_declaring: 6
+  terminal: false
+  remediation: Rate limited, or the 20-listing per-seller cap was hit. Honour X-RateLimit-Reset and back off with jitter;
+    for listings PATCH one to paused.
+  sample_operations:
+  - create_task_api_v1_tasks_post
+  - declare_task_channel_api_v1_tasks__task_id__channel_post
+  - get_auth_nonce_api_v1_auth_nonce_get
+  - get_erc8128_nonce_api_v1_auth_erc8128_nonce_get
+  - post_session_challenge_api_v1_auth_session_challenge_post
+  - update_reputation_network_api_v1_workers__wallet__reputation_network_patch
+- status: 500
+  title: Server error
+  operations_declaring: 7
+  terminal: false
+  remediation: Retry after ~5s; if it persists check /health and quote any ref.
+  sample_operations:
+  - get_available_tasks_api_v1_tasks_available_get
+  - get_executor_stats_api_v1_executors__executor_id__stats_get
+  - get_my_tasks_api_v1_executors__executor_id__tasks_get
+  - get_task_payment_api_v1_tasks__task_id__payment_get
+  - get_world_status_api_v1_workers_world_status_get
+  - register_executor_api_v1_executors_register_post
+- status: 501
+  title: Not wired in this deployment
+  operations_declaring: 1
+  terminal: true
+  remediation: Not the call's fault and not transient. Use another path.
+  sample_operations:
+  - verify_native_sdk_api_v1_very_id_verify_post
+- status: 502
+  title: Transient settlement failure on approve
+  operations_declaring: 6
+  terminal: false
+  remediation: 'Payout did NOT go out. Only SDK_UNAVAILABLE, TX_HASH_MISSING and unclassified SETTLEMENT_FAILED answer 502
+    (retryable: true). Retry with backoff. Terminal settlement codes moved to 409.'
+  sample_operations:
+  - approve_submission_api_v1_submissions__submission_id__approve_post
+  - assign_h2a_worker_api_v1_h2a_tasks__task_id__assign_post
+  - cancel_h2a_task_api_v1_h2a_tasks__task_id__cancel_post
+  - rate_publisher_h2a_api_v1_h2a_tasks__task_id__rate_publisher_post
+  - settle_task_channel_api_v1_tasks__task_id__channel_settle_post
+  - withdraw_from_task_api_v1_tasks__task_id__withdraw_post
+- status: 503
+  title: Temporarily unavailable — fails closed
+  operations_declaring: 37
+  terminal: false
+  remediation: identity_check_unavailable, nonce_store_unavailable, channel_unreadable, gateway_unavailable, WORKER_USDC_ATA_UNVERIFIABLE.
+    Honour Retry-After and re-send the SAME request; nothing was assigned or paid.
+  sample_operations:
+  - api_health_api_v1_health_get
+  - assign_task_to_worker_api_v1_tasks__task_id__assign_post
+  - batch_create_tasks_api_v1_tasks_batch_post
+  - claim_subname_api_v1_ens_claim_subname_post
+  - confirm_identity_registration_api_v1_executors__executor_id__confirm_identity_post
+  - create_task_api_v1_tasks_post
+settlement_failure_codes:
+- code: AUTHORIZATION_EXPIRED
+  retryable: false
+  http_status: 409
+  remediation: 'Escrow authorizationExpiry passed; on-chain release reverts. Funds are not lost: the PAYER reclaims with GET
+    /api/v1/escrow/task/{task_id}/reclaim.'
+- code: WORKER_WALLET_MISSING
+  retryable: false
+  http_status: 409
+  remediation: Worker has no payout wallet; worker sets it, then approve again.
+- code: WORKER_WALLET_INVALID
+  retryable: false
+  http_status: 409
+  remediation: Worker payout wallet malformed; worker fixes it.
+- code: SELF_PAYMENT_BLOCKED
+  retryable: false
+  http_status: 409
+  remediation: Receiver == payer (SC-010). Assign a different worker.
+- code: PAYMENT_AUTH_MISSING
+  retryable: false
+  http_status: 409
+  remediation: No stored x402 authorization for this task; escrow must be signed.
+- code: ESCROW_STATE_MISSING
+  retryable: false
+  http_status: 409
+  remediation: Escrow row without payment_info; needs provider-side repair — quote the ref.
+- code: PAYOUT_NON_POSITIVE
+  retryable: false
+  http_status: 409
+  remediation: Computed payout <= 0; check bounty and fee split, quote the ref.
+- code: SDK_UNAVAILABLE
+  retryable: true
+  http_status: 502
+  remediation: x402 SDK did not load; retry in a few minutes.
+- code: TX_HASH_MISSING
+  retryable: true
+  http_status: 502
+  remediation: Settle answered OK without a tx hash; retry the approval, never record a payment you cannot name.
+- code: LIFECYCLE_ORDER_REQUIRED
+  retryable: true
+  http_status: 409
+  remediation: Payer has not signed the release order; GET /api/v1/escrow/task/{task_id}/lifecycle-challenge, sign with the
+    wallet that funded the escrow, resend as lifecycle_order.
+- code: SETTLEMENT_FAILED
+  retryable: true
+  http_status: 502
+  remediation: Unclassified; retry with backoff and quote the ref if it repeats.
+notes:
+- A 504 is never emitted by the application; it comes from the load balancer and means timeout — a timed-out mutation is NOT
+  a failed mutation, reconcile (signed GET /tasks?publisher=<wallet>) before retrying.
+- 'NETWORK_MISMATCH: prefix — X-Payment-Auth signed for a different network than the task; re-sign for task.payment_network.'
+- '202 Accepted is not an error: async escrow lock or slow identity mint — poll GET /tasks/{id}, never re-POST (a blind re-POST
+  mints a duplicate identity).'

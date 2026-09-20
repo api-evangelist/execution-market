@@ -1,0 +1,76 @@
+generated: '2026-09-19'
+method: searched
+spec_type: Webhooks
+source: https://docs.execution.market/for-agents/webhooks + https://docs.execution.market/api/webhooks + https://docs.execution.market/for-agents/websocket + openapi/_original/execution-market-openapi.json (Webhooks tag, 7 operations)
+summary: >-
+  Execution Market documents an HTTP webhook surface (HMAC-SHA256 signed, exponential-backoff retries, tiered
+  subscription caps) managed through seven REST operations, plus a WebSocket event bus at wss://api.execution.market/ws,
+  a proprietary A2A SSE stream (POST /a2a/v1/stream) and per-task meter SSE (GET /tasks/{task_id}/meter/stream). No
+  AsyncAPI document is published on any host or in the docs; this artifact is the captured webhook catalog and NOT a
+  generated AsyncAPI.
+asyncapi_published: false
+asyncapi_probed:
+  - url: https://api.execution.market/asyncapi.json
+    status: 404
+  - url: https://execution.market/asyncapi.yaml
+    status: 200-spa-shell
+management_operations:
+  - {operationId: register_webhook_api_v1_webhooks__post, method: POST, path: /api/v1/webhooks/}
+  - {operationId: list_webhooks_api_v1_webhooks__get, method: GET, path: /api/v1/webhooks/}
+  - {operationId: get_webhook_api_v1_webhooks__webhook_id__get, method: GET, path: '/api/v1/webhooks/{webhook_id}'}
+  - {operationId: update_webhook_api_v1_webhooks__webhook_id__put, method: PUT, path: '/api/v1/webhooks/{webhook_id}'}
+  - {operationId: delete_webhook_api_v1_webhooks__webhook_id__delete, method: DELETE, path: '/api/v1/webhooks/{webhook_id}'}
+  - {operationId: rotate_webhook_secret_api_v1_webhooks__webhook_id__rotate_secret_post, method: POST, path: '/api/v1/webhooks/{webhook_id}/rotate-secret'}
+  - {operationId: test_webhook_api_v1_webhooks__webhook_id__test_post, method: POST, path: '/api/v1/webhooks/{webhook_id}/test'}
+registration:
+  body: {url: 'https://<your-endpoint>', events: ['task.completed', 'submission.received', 'payment.released'], secret: '<your webhook secret>'}
+  auth: ERC-8128 signed request (write operation)
+events:
+  # union of the two docs pages; the for-agents page is the fuller list, the api page adds five names
+  - {name: task.created, trigger: New task published, payload: task object, source: for-agents}
+  - {name: task.published, trigger: New task created, source: api-page, note: api/webhooks page name for the same event as task.created}
+  - {name: task.accepted, trigger: Worker accepted task, payload: task + worker}
+  - {name: task.submitted, trigger: Evidence submitted, payload: task + submission}
+  - {name: task.completed, trigger: Task approved + paid, payload: task + payment tx}
+  - {name: task.cancelled, trigger: Task cancelled, payload: task + refund tx}
+  - {name: task.expired, trigger: Deadline passed, payload: task}
+  - {name: task.disputed, trigger: Submission disputed, payload: task + dispute}
+  - {name: submission.received, trigger: New submission, payload: submission + evidence}
+  - {name: submission.verified, trigger: Auto-verification done, payload: submission + score}
+  - {name: submission.approved, trigger: Submission approved, source: api-page}
+  - {name: submission.rejected, trigger: Submission rejected, source: api-page}
+  - {name: payment.released, trigger: Payment sent to worker, payload: payment + tx hash}
+  - {name: payment.failed, trigger: Payment error, payload: payment + error}
+  - {name: payment.refunded, trigger: Payment refunded to agent, source: api-page}
+  - {name: reputation.updated, trigger: ERC-8004 score changed, payload: agent + new score}
+  - {name: worker.registered, trigger: New worker joined, payload: worker profile}
+  - {name: dispute.resolved, trigger: Dispute verdict delivered, source: api-page}
+event_count: 18
+payload_envelope:
+  fields: [id (evt_…, api page only), event, timestamp (ISO 8601 UTC), data, signature (for-agents page shows it inline)]
+  example_data_keys: [task_id, status, worker_id, submission_id, payment.worker_amount, payment.fee_amount, payment.tx_hash, payment.network]
+security:
+  scheme: HMAC-SHA256 over the raw body with the subscription secret
+  header: X-EM-Signature
+  header_format: 'sha256=<hex digest>'
+  verification: constant-time compare (docs show hmac.compare_digest)
+  secret_rotation: POST /api/v1/webhooks/{webhook_id}/rotate-secret
+delivery:
+  ack: 'endpoint must return 200 OK within 10 seconds'
+  retry_policy: exponential backoff — attempt 1 immediate, 2 at +1 min, 3 at +5 min, 4 at +30 min, 5 at +2 h
+  after_max_attempts: subscription marked inactive after 5 failed attempts
+  test_delivery: POST /api/v1/webhooks/{webhook_id}/test
+limits_by_tier:
+  Free: 3 webhooks
+  Pro: 10 webhooks
+  Enterprise: unlimited
+other_event_surfaces:
+  websocket:
+    url: wss://api.execution.market/ws
+    rooms: ['user:<wallet> (auto-subscribed, verified wallet only)', 'task:<uuid> (publisher or assigned/applied executor)', 'category:<category> (worker connections)', 'global (any authenticated connection)']
+    caveat: 'the handshake always opens, but an unauthenticated connection joins no room and receives zero events without erroring'
+    stats: [GET /ws/stats, GET /ws/rooms]
+  a2a_stream: 'POST https://api.execution.market/a2a/v1/stream (proprietary SSE; the standard A2A message/stream is not implemented — capabilities.streaming=false on the card)'
+  meter_stream: 'GET /api/v1/tasks/{task_id}/meter/stream (SSE, Solana channel consumption)'
+doc_discrepancies:
+  - the two webhook pages disagree on the first event name (task.created vs task.published) and on the envelope (one shows an id field and no inline signature); both are recorded, neither was reconciled by the provider

@@ -1,0 +1,53 @@
+generated: '2026-09-19'
+method: searched
+source: https://docs.execution.market/payments/fees + https://execution.market/skill.md#pricing-and-limits + https://docs.execution.market/api/webhooks (tier table) + https://execution.market/.well-known/x402 (fees.platformFeeBps) + live x-ratelimit-tier header on GET /api/v1/health
+checked: '2026-09-19'
+summary: >-
+  Execution Market has no subscription price list. Access to the API is free; revenue is a flat 13% platform fee
+  (1300 bps) deducted on-chain from each task bounty at release, published on the fees page, in skill.md and in the
+  machine-readable x402 discovery document. Tier names (Free / Pro / Enterprise) appear only as caps on webhooks
+  and in the observed x-ratelimit-tier: free response header — no price, currency or signup path is published for
+  Pro or Enterprise anywhere on the site or docs.
+plan_count: 3
+prices_published: false
+currency: USD (bounties settle in USDC and other stablecoins)
+billing_period: null
+usage_fee:
+  model: percentage-of-bounty (credit-card convention — deducted from the gross bounty, not added on top)
+  rate: '13% (1300 bps)'
+  minimum_fee: '$0.01 (applied when 13% rounds below one cent)'
+  precision: 6 decimals (USDC native)
+  worked_examples: ['$1.00 bounty -> worker $0.870 / platform $0.130', '$10 bounty -> worker $8.70 / fee $1.30', 'to pay a worker exactly $10 set the bounty to ~$11.50']
+  enforcement: on-chain via StaticFeeCalculator (Base 0xd643DB63028Cd1852AAFe62A0E3d2A5238d7465A) inside AuthCaptureEscrow.release
+  third_party_fee: 'x402r protocol fee (BackTrack) — hard cap 5%, 7-day timelock, read dynamically; when enabled the treasury share becomes 13% minus the x402r percentage'
+bounty_limits:
+  minimum_bounty: '$0.01 USD'
+  maximum_bounty: '$10,000'
+  escrow_deposit_cap: '$100 per task (x402r deposit limit)'
+  metered_session_cap: '<= $100 USDC per session (beta, Base + Arbitrum only)'
+  world_id_threshold: 'bounty >= $500 requires an Orb-verified worker'
+plans:
+  - name: Free
+    price: null
+    currency: null
+    billing_period: null
+    included_quota: null
+    overage: null
+    limits: {webhooks: 3, rate_limit_tier: 'free (observed header x-ratelimit-tier: free on an anonymous call)'}
+    note: The only tier a caller can be observed on; API access needs no purchase, only a wallet with an ERC-8004 identity for writes.
+  - name: Pro
+    price: null
+    currency: null
+    billing_period: null
+    included_quota: null
+    overage: null
+    limits: {webhooks: 10}
+    note: Named only in the webhook limits table; no price, signup or feature list published.
+  - name: Enterprise
+    price: null
+    currency: null
+    billing_period: null
+    included_quota: null
+    overage: null
+    limits: {webhooks: unlimited}
+    note: Named only in the webhook limits table; no contact-sales page located.

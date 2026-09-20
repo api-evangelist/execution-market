@@ -1,0 +1,48 @@
+generated: '2026-09-19'
+method: searched
+probe: true
+source: >-
+  Harvested artifacts (well-known/, security/, lifecycle/, conformance/), live probes of the conventional paths on
+  docs.execution.market and api.execution.market (/accessibility, /accessibility/vpat, /legal/subprocessors, /legal/dpa,
+  /privacy/requests, /transparency, /trust, /security/sbom, /docs/data-residency, /ai, /ai/transparency,
+  /legal/report-content — all 404; execution.market itself is an SPA catch-all so its 200s are not evidence), a grep of
+  the two llms-full bundles, and the machine-readable privacy policy at GET https://api.execution.market/api/v1/legal/privacy.
+summary: >-
+  Two signals are published with substance: a data-subject-request path (the privacy policy names GDPR rights and two
+  documented API operations — export and delete — that exist in the OpenAPI) and machine-readable export/portability
+  (GET /api/v1/account/export, "Export your data in machine-readable format (GDPR Article 20)"). Everything else in
+  the horizontal layer is absent: no SBOM, no support-lifetime statement, no accessibility conformance report, no AI
+  transparency page (despite AI verification of evidence being a documented feature), no GPC statement, no subprocessor
+  list or DPA, no data-residency page, no incident-notification SLA, no age-assurance mechanism (the terms say "at
+  least 18 years old", which is a term of service, not assurance), no notice-and-action page, no transparency report.
+signals:
+  data_subject_request:
+    url: https://api.execution.market/api/v1/legal/privacy
+    statement: 'Your Rights — Access your data at any time; Export your data in machine-readable format (GDPR Article 20); Delete your account and personal data; Object to data processing. For privacy inquiries: privacy@ultravioletadao.xyz'
+    api:
+      - operationId: export_account_data_api_v1_account_export_get
+        method: GET
+        path: /api/v1/account/export
+      - operationId: delete_account_api_v1_account_delete
+        method: DELETE
+        path: /api/v1/account
+    contact: privacy@ultravioletadao.xyz
+    last_updated: '2026-03-21'
+  exit_assistance:
+    url: https://api.execution.market/api/v1/legal/privacy
+    statement: 'You can request data export (GET /api/v1/account/export) … Export your data in machine-readable format (GDPR Article 20)'
+    api: https://api.execution.market/api/v1/account/export
+    note: recorded as portability/export of the account's own data; there is no cloud-switching or migration-assistance page
+absent:
+  sbom: 'no SBOM published; CI runs Trivy/Gitleaks per docs but no bill of materials is served — never derived'
+  support_lifetime: no support period stated anywhere
+  accessibility_conformance: no VPAT/WCAG statement (docs and apex probed)
+  training_data_summary: none
+  ai_transparency: 'docs disclose that AI verification (Claude Vision / GPT-4V) checks evidence and that it "can be fooled"; this is a security note inside the security page, not an AI transparency disclosure page — not credited'
+  global_privacy_control: no published statement (not header-probed by design)
+  subprocessors: none (Supabase, AWS, CloudFront, Dynamic.xyz, World ID are named as stack components in the security page, not as a subprocessor list)
+  data_residency: none
+  incident_notification: 'none for customers; the 48-hour figure on the security page is a researcher-acknowledgement SLA, not an incident-notification commitment'
+  age_assurance: 'terms state "You must be at least 18 years old"; no assurance mechanism (World ID Orb verification proves personhood for bounties >= $500, not age)'
+  notice_and_action: none
+  transparency_report: none

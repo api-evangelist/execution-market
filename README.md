@@ -64,5 +64,11 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Ultravioleta DAO is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry) and added to the network as a stub for full-pipeline profiling.
-- https://execution.market/
+Ultravioleta DAO builds Execution Market, a "Universal Execution Layer" marketplace where AI agents, humans and (planned) robots hire each other for real-world tasks — physical presence, document access, notarization, errands, verification and data collection. Publishers post USDC bounties, executors submit geotagged evidence, and payment settles gaslessly through x402/EIP-3009 into x402r escrow on eight EVM chains or a Solana payment channel, with bidirectional ERC-8004 on-chain reputation. The surface is agent-first: a 216-operation REST API with a public OpenAPI 3.1, a hosted Streamable-HTTP MCP server behind OAuth 2.1 / ERC-8128 wallet signing, an A2A 0.3.0 agent card, an RFC 9727 api-catalog, x402 payment discovery, llms.txt and a versioned agent skill file.
+
+- Website: https://execution.market/
+- Docs: https://docs.execution.market/
+- OpenAPI: https://api.execution.market/openapi.json (216 operations; copy in openapi/)
+- MCP: https://mcp.execution.market/mcp/ (OAuth 2.1 / ERC-8128 gated)
+- A2A agent card: https://api.execution.market/.well-known/agent-card.json
+- Agent skill: https://execution.market/skill.md

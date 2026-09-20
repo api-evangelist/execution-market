@@ -1,0 +1,149 @@
+generated: '2026-09-19'
+method: searched
+source: openapi/execution-market-openapi.yml (5 securitySchemes) + https://execution.market/auth.md + live GET https://api.execution.market/api/v1/auth/info
+  (2026-09-19)
+summary:
+  types:
+  - apiKey
+  - oauth2
+  api_key_in:
+  - header
+  oauth2_flows:
+  - authorizationCode
+schemes:
+- name: erc8128
+  type: apiKey
+  in: header
+  parameter: Signature-Input
+  description: ERC-8128 (RFC 9421 HTTP Message Signatures). Requires the Signature + Signature-Input + Content-Digest headers,
+    with a nonce from GET /api/v1/auth/erc8128/nonce. See https://execution.market/skill.md
+  sources:
+  - openapi/execution-market-openapi.yml
+- name: walletSession
+  type: apiKey
+  in: header
+  parameter: X-EM-Session
+  description: 'Signed session (wallet_session). A SessionGrant this server builds at POST /api/v1/auth/session/challenge,
+    signed by the wallet and replayed verbatim. For clients that cannot hash a request body and have no clock. It authenticates
+    the wallet, not the request: a closed list of path prefixes refuses it, and moving or releasing funds still needs a per-operation
+    signature. GET /api/v1/auth/info lists '
+  sources:
+  - openapi/execution-market-openapi.yml
+- name: oauthBearer
+  type: oauth2
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://auth.execution.market/oauth/authorize
+    tokenUrl: https://auth.execution.market/oauth/token
+    scopes: 9
+  description: 'OAuth 2.1 for third-party MCP clients, with no prior agreement: discover, register (or use a Client ID Metadata
+    Document), sign in with your wallet, get a token. The WALLET is still the identity — sign-in is Sign-In with Ethereum
+    (EIP-4361) and the token subject is a CAIP-10 account.
+
+
+    Like a signed session it authenticates the HOLDER and not the request, so it carries the same closed list of refus'
+  sources:
+  - openapi/execution-market-openapi.yml
+- name: releaseApproval
+  type: apiKey
+  in: header
+  parameter: X-EM-Approval
+  description: Per-operation EIP-712 ReleaseApproval naming ONE submission. Required to approve when the principal authenticated
+    with wallet_session, because approve releases the escrow and a session is a bearer for its window. Build it at GET /api/v1/submissions/{submission_id}/approve/challenge.
+  sources:
+  - openapi/execution-market-openapi.yml
+- name: x402Payment
+  type: apiKey
+  in: header
+  parameter: X-Payment-Auth
+  description: x402 payment authorization — the agent's signed EIP-3009 ReceiveWithAuthorization that funds the task escrow.
+    Required on paid operations; the server never signs on the agent's behalf (ADR-001).
+  sources:
+  - openapi/execution-market-openapi.yml
+docs:
+- https://execution.market/auth.md
+- https://docs.execution.market/for-agents/authentication
+- https://docs.execution.market/identity/erc-8128
+- https://execution.market/skill/reference/oauth.md
+- https://execution.market/skill/reference/signing.md
+live_modes:
+  source: GET /api/v1/auth/info
+  authorities:
+  - api.execution.market
+  - mcp.execution.market
+  modes:
+  - name: none
+    status: enabled
+    identity: none
+    note: discovery and public reads; anonymous callers resolve to a sentinel that owns nothing
+  - name: erc8128
+    status: enabled
+    identity: wallet
+    obtain: GET /api/v1/auth/erc8128/nonce
+    info: /api/v1/auth/erc8128/info
+  - name: wallet_session
+    status: enabled
+    identity: wallet
+    obtain: POST /api/v1/auth/session/challenge
+  - name: oauth2.1
+    status: enabled (rail answers on auth.execution.market; RFC 9728 challenge observed on the MCP endpoint)
+    identity: wallet via EIP-4361 sign-in; token sub is CAIP-10
+  - name: api_key
+    status: DISABLED (EM_API_KEYS_ENABLED=false); every API-key request returns 403
+    header: X-API-Key
+  paybox_connect: enabled — linked-account rail via api.paybox.sh (OAuth client pbx-…, redirect https://auth.execution.market/oauth/paybox/callback)
+searched_details:
+  erc8128:
+    spec: https://eips.ethereum.org/EIPS/eip-8128
+    rfc: RFC 9421 HTTP Message Signatures over EIP-191, RFC 9530 Content-Digest
+    headers:
+    - Signature
+    - Signature-Input
+    - Content-Digest
+    nonce: GET /api/v1/auth/erc8128/nonce — rate-limited per IP, single-use, consumed atomically
+    validity: <= 300 seconds; bound to method, authority, path, query and body digest; a captured header cannot be replayed
+      against another route, host or body
+    authority_binding: '@authority must be api.execution.market or mcp.execution.market (401 authority_not_allowed otherwise)'
+    identity_requirement: the signing wallet must hold an ERC-8004 identity (403 identity_required otherwise)
+    revocation: rotate the wallet key or move the funds — no token or session to invalidate
+  walletSession:
+    header: X-EM-Session
+    obtain: POST /api/v1/auth/session/challenge returns an EIP-712 SessionGrant the wallet signs and replays verbatim
+    audience: clients that cannot hash a request body and have no clock
+    limits: authenticates the WALLET not the request; a closed list of path prefixes refuses it and money steps still need
+      a per-operation signature (X-EM-Approval / X-Payment-Auth)
+    gate: EM_WALLET_SESSION_ENABLED (observed enabled)
+  oauthBearer:
+    authorization_server: https://auth.execution.market
+    metadata: well-known/execution-market-auth-oauth-authorization-server.json
+    protected_resource: well-known/execution-market-mcp-oauth-protected-resource-mcp.json
+    client_registration: RFC 7591 dynamic registration at /oauth/register, or a Client ID Metadata Document (an https URL
+      as client_id)
+    pkce: S256 mandatory; plain refused
+    token: JWT ES256; aud = the MCP endpoint; 1 h lifetime (15 min when agent:approve is granted); refresh tokens rotate and
+      reuse revokes the whole family
+    refused_for_bearers:
+    - worker:submit (v1)
+    - worker:withdraw
+    - reputation:rate
+    - /escrow
+    - /account
+    - /disputes
+    - /evidence
+    - /reputation
+    - /admin
+    - /api/v1/h2a
+    - writes under /submissions, /services, /verification
+    step_up: '403 with WWW-Authenticate: Bearer error="insufficient_scope", scope="<needed>"'
+    money: 'a bearer never authorises money on its own — assign needs a per-operation EIP-3009 signature; approve needs X-EM-Approval
+      or the separately-consented agent:approve scope (caps: max per approval and total approvals, up to $100.00 and 50, signed
+      into the EIP-4361 message)'
+  releaseApproval:
+    header: X-EM-Approval
+    build: GET /api/v1/submissions/{submission_id}/approve/challenge
+    when: required to approve when the principal authenticated with wallet_session or a bearer without agent:approve
+  x402Payment:
+    header: X-Payment-Auth
+    what: the agent-signed EIP-3009 ReceiveWithAuthorization that funds the task escrow; the server never signs on the agent's
+      behalf (ADR-001)
+    errors: 402 with detail.code — see errors/execution-market-decline-codes.yml

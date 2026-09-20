@@ -1,0 +1,417 @@
+generated: '2026-09-19'
+method: probed
+source: direct unauthenticated HTTPS probes of every host the record knows (registrable domain + www, the API host, the MCP
+  host, the OAuth authorization-server host named in authorization_servers[], and the docs host), 2026-09-19
+name: Execution Market .well-known probe
+summary: 'Real documents are served: an RFC 9727 api-catalog linkset (application/linkset+json) on the apex, RFC 9728 protected-resource
+  metadata on the MCP host at both the root and the /mcp path form, RFC 8414 authorization-server metadata plus a JWKS on
+  auth.execution.market, an A2A agent card on five hosts at both the canonical and legacy paths, an x402 payment-discovery
+  document, and an MCP server card. NOT served anywhere: security.txt (RFC 9116 — so NO SecurityTxt pointer), openid-configuration,
+  ai-plugin.json, ucp.json, acp.json, aauth-resource.json, apis.json/apis.yml. registration_endpoint is present in the AS
+  metadata (dynamic client registration) and client_id_metadata_document_supported is true.'
+hit_count: 20
+pointer_basis: WellKnown pointer emitted on the strength of the api-catalog, protected-resource and authorization-server documents.
+  SecurityTxt pointer NOT emitted. AgentCard pointer emitted via a2a/. Compliance/Trust pointers not emitted from this file.
+false_positive_watch: execution.market and www.execution.market answer HTTP 200 text/html (17,836 bytes, the Vite SPA shell)
+  for EVERY unknown path including the negative control. Those 200s are recorded as misses below. A future round that promotes
+  a text/html 200 on those hosts into a document is wrong.
+apis_json:
+  found: false
+  note: No APIs.json index at /apis.json, /apis.yml or /.well-known/apis.json on any host (api/mcp/auth/docs hosts 404; apex/www
+    return the SPA shell).
+aauth:
+  found: false
+  note: /.well-known/aauth-resource.json absent on every host; recorded so the next sweep can show movement.
+hosts:
+- host: https://api.execution.market
+  role: REST API + A2A host (OpenAPI servers[], agent card url)
+  path_echo_control: passed
+  negative_control:
+    url: https://api.execution.market/.well-known/execution-market-negative-control-4c8d2b.json
+    status: 404
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/agent.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/x402
+    status: 200
+    file: execution-market-x402.json
+    content_type: application/json
+    bytes: 6542
+  - path: /.well-known/mcp/server-card.json
+    status: 404
+- host: https://mcp.execution.market
+  role: MCP resource server (RFC 9728 protected-resource metadata lives HERE, not on the primary domain)
+  path_echo_control: passed
+  negative_control:
+    url: https://mcp.execution.market/.well-known/execution-market-negative-control-4c8d2b.json
+    status: 404
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: execution-market-mcp-oauth-protected-resource.json
+    content_type: application/json
+    bytes: 1538
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 200
+    file: execution-market-mcp-oauth-protected-resource-mcp.json
+    content_type: application/json
+    bytes: 1542
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/agent.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/x402
+    status: 200
+    file: execution-market-x402.json
+    content_type: application/json
+    bytes: 6542
+  - path: /.well-known/mcp/server-card.json
+    status: 404
+- host: https://auth.execution.market
+  role: OAuth 2.1 authorization server named in authorization_servers[] of the protected-resource metadata (third host — RFC
+    8414 doc lives here)
+  path_echo_control: passed
+  negative_control:
+    url: https://auth.execution.market/.well-known/execution-market-negative-control-4c8d2b.json
+    status: 404
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: execution-market-auth-oauth-authorization-server.json
+    content_type: application/json
+    bytes: 2535
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/x402
+    status: 404
+  - path: /.well-known/mcp/server-card.json
+    status: 404
+  - path: /.well-known/jwks.json
+    status: 200
+    file: execution-market-auth-jwks.json
+    content_type: application/json
+    bytes: 366
+    note: jwks_uri named by the RFC 8414 document; two ES256 P-256 keys
+- host: https://execution.market
+  role: registrable domain — Vite SPA that answers 200 text/html for every unknown path; only the JSON/linkset responses below
+    are real documents (the SPA proxies them to the API)
+  path_echo_control: failed-for-html
+  soft_404_control:
+    url: https://execution.market/.well-known/execution-market-negative-control-4c8d2b.json
+    status: 200
+    content_type: text/html
+    bytes: 17836
+    note: Control probe. Any 200 text/html of 17,836 bytes on this host is the SPA shell, not a document. Hits were accepted
+      ONLY where the content-type was JSON/linkset and the byte count differed from the shell.
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/openid-configuration
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/api-catalog
+    status: 200
+    file: execution-market-api-catalog.json
+    content_type: application/linkset+json
+    bytes: 1670
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/ucp.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/acp.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/aauth-resource.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/apis.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /apis.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /apis.yml
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/agent.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/x402
+    status: 200
+    file: execution-market-x402.json
+    content_type: application/json
+    bytes: 6542
+  - path: /.well-known/mcp/server-card.json
+    status: 200
+    file: execution-market-mcp-server-card.json
+    content_type: application/json
+    bytes: 1679
+- host: https://www.execution.market
+  role: www alias — byte-identical behaviour to the apex (SPA catch-all; same api-catalog, card and x402 bodies)
+  path_echo_control: failed-for-html
+  soft_404_control:
+    url: https://www.execution.market/.well-known/execution-market-negative-control-4c8d2b.json
+    status: 200
+    content_type: text/html
+    bytes: 17836
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/openid-configuration
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/api-catalog
+    status: 200
+    file: execution-market-api-catalog.json
+    content_type: application/linkset+json
+    bytes: 1670
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/ucp.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/acp.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/aauth-resource.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/apis.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /apis.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /apis.yml
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/agent.json
+    status: 200
+    file: ../a2a/execution-market-agent-card.json
+    content_type: application/json
+    bytes: 5808
+  - path: /.well-known/x402
+    status: 200
+    file: execution-market-x402.json
+    content_type: application/json
+    bytes: 6542
+  - path: /.well-known/mcp/server-card.json
+    status: 200
+    hit: false
+    file: null
+    note: SPA catch-all shell (text/html, 17,836 bytes — identical to the site root and to the negative control); not a document
+- host: https://docs.execution.market
+  role: docs host (VitePress; serves llms.txt + per-page .md)
+  path_echo_control: passed
+  negative_control:
+    url: https://docs.execution.market/.well-known/execution-market-negative-control-9a1f3c7e.json
+    status: 404
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/x402
+    status: 404
+  - path: /.well-known/mcp/server-card.json
+    status: 404

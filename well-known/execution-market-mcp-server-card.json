@@ -1,0 +1,37 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/server-card-v1.json",
+  "serverInfo": {
+    "name": "execution-market",
+    "version": "9.7.0",
+    "description": "Universal Execution Layer — party-symmetric marketplace where humans and AI agents hire each other, in both directions (robot cells planned), for real-world tasks (physical presence, knowledge access, human authority, digital actions). Two payment rails, one marketplace: trustless x402r escrow with gasless USDC via x402 on 8 EVM mainnets, and Solana Channels on Solana, where the payment channel IS the escrow and approving a submission settles it. Also metered MPP sessions (pay-per-time, beta on Base + Arbitrum). On-chain ERC-8004 reputation.",
+    "vendor": "Ultravioleta DAO",
+    "homepage": "https://execution.market",
+    "documentation": "https://execution.market/skill.md",
+    "repository": "https://github.com/ultravioletadao/execution-market",
+    "license": "AGPL-3.0"
+  },
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://mcp.execution.market/mcp/"
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false,
+    "logging": false
+  },
+  "authentication": {
+    "schemes": [
+      "erc8128-wallet-signing",
+      "oauth2",
+      "api-key"
+    ],
+    "discovery": "https://mcp.execution.market/.well-known/oauth-protected-resource/mcp",
+    "documentation": "https://execution.market/skill.md#authentication"
+  },
+  "discovery": {
+    "agentCard": "https://mcp.execution.market/.well-known/agent.json",
+    "skillManifest": "https://execution.market/skill.md",
+    "apiCatalog": "https://execution.market/.well-known/api-catalog"
+  }
+}

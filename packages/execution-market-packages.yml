@@ -1,0 +1,98 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  Registry metadata endpoints (registry.npmjs.org/<pkg>, pypi.org/pypi/<pkg>/json), the GitHub account
+  github.com/UltravioletaDAO (a User account with 13 public repos, not an Organization), and the provider's
+  SDK docs at docs.execution.market/sdk/{python,typescript,plugin} and skill/reference/escrow.md.
+checked: '2026-09-19'
+summary:
+  first_party_sdk_count: 2
+  execution_market_specific_sdk_count: 0
+  note: >-
+    Execution Market's own client library, em-plugin-sdk (Python, httpx + Pydantic v2), is SOURCE-ONLY and the
+    source is not reachable: docs/sdk/plugin says "not published to PyPI — install from the repository", and the
+    repository it names (github.com/UltravioletaDAO/execution-market) returns 404 anonymously (the provider's own
+    escrow reference says the monorepo "is private" and that a git-URL install "fails as an auth error or a 404").
+    The two packages Ultravioleta DAO DOES publish are the uvd-x402-sdk payment SDKs (PyPI + npm), which carry the
+    x402/EIP-3009 escrow primitives the API's money steps require and which the provider's own docs point agents
+    at ("the published uvd-x402-sdk on PyPI carries the escrow primitives"). They are first-party to the company
+    and load-bearing for calling this API, but they are payment-rail SDKs, not a typed client for the REST surface.
+    Because >=1 official first-party package exists, an SDKs pointer is emitted; a consumer should read this note
+    before assuming a typed Execution Market client is installable.
+  open_source_claim: >-
+    llms.txt, index.md, the MCP server card and the contributing page all describe the platform as open source
+    (MIT/AGPL-3.0 are both named) and link github.com/UltravioletaDAO/execution-market; that repository was 404 on
+    2026-09-19 (HTML page and REST API). Recorded as a documentation/reality gap, not as a package.
+
+github_organization:
+  found: true
+  url: https://github.com/UltravioletaDAO
+  type: User
+  public_repos: 13
+  note: >-
+    The account exists and holds the x402 SDK repos, but the execution-market monorepo is not among its public
+    repositories.
+
+packages:
+  - language: python
+    registry: pypi
+    name: uvd-x402-sdk
+    url: https://pypi.org/project/uvd-x402-sdk/
+    install: pip install uvd-x402-sdk
+    official: true
+    version: 0.88.0
+    published: '2026-09-17'
+    releases: 106
+    author: Ultravioleta DAO <dev@ultravioletadao.xyz>
+    repository: https://github.com/UltravioletaDAO/uvd-x402-sdk-python
+    documentation: https://docs.ultravioletadao.xyz/x402-sdk
+    scope: >-
+      x402 payments — EIP-3009 authorizations, x402r escrow authorize/release/refund/reclaim, ERC-8004 identity —
+      across 29 networks via the Ultravioleta facilitator. Named by skill/reference/escrow.md as the installable
+      substitute for em-plugin-sdk's escrow primitives.
+    currency_note: 'Released 2 days before this probe; 106 releases on PyPI.'
+  - language: typescript
+    registry: npm
+    name: uvd-x402-sdk
+    url: https://www.npmjs.com/package/uvd-x402-sdk
+    install: npm install uvd-x402-sdk
+    official: true
+    version: 2.96.0
+    published: '2026-09-17'
+    author: Ultravioleta DAO <ultravioletadao@gmail.com>
+    repository: https://github.com/UltravioletaDAO/uvd-x402-sdk-typescript
+    homepage: https://402milly.xyz
+    scope: >-
+      Multi-chain x402 payment SDK (EVM, Solana, Stellar, NEAR). Same rail as the Python package; the TypeScript
+      docs page for Execution Market shows raw fetch + @slicekit/erc8128 signing rather than this package.
+
+source_only:
+  - language: python
+    registry: source
+    name: em-plugin-sdk
+    official: true
+    version: null
+    published: null
+    install: 'pip install -e ./em-plugin-sdk   # from a checkout of a repository that is not publicly reachable'
+    documentation: https://docs.execution.market/sdk/plugin
+    repository: https://github.com/UltravioletaDAO/execution-market
+    repository_status: 404
+    note: >-
+      Typed async client organised as resource namespaces (tasks, submissions, workers, h2a, agents, escrow,
+      disputes, worldid, reputation, evidence, payments, webhooks, identity). Not on PyPI (confirmed 404 at
+      pypi.org/pypi/em-plugin-sdk/json) and the source repository is private, so version/published are null:
+      checked, nothing installable to record.
+
+third_party_packages:
+  - language: typescript
+    registry: npm
+    name: '@slicekit/erc8128'
+    official: false
+    note: >-
+      The request-signing library the provider's own TypeScript docs use for ERC-8128 (RFC 9421) signatures.
+      Not published by Ultravioleta DAO; listed because the docs make it the de-facto client dependency.
+
+registries_probed:
+  npm: [execution-market, '@ultravioletadao/execution-market', '@execution-market/sdk', execution-market-mcp, uvd-x402-sdk]
+  pypi: [execution-market, execution_market, em-plugin-sdk, uvd-x402-sdk, ultravioleta-execution-market]
+  note: Only uvd-x402-sdk resolved on either registry; every other name returned 404.

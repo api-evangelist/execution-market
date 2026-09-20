@@ -1,0 +1,37 @@
+generated: '2026-09-19'
+method: searched
+source: https://execution.market/skill.md#error-codes--all-17-up-front (402 row) + https://execution.market/skill/reference/escrow.md
+scope: x402 / x402r escrow-lock authorization refusals on assign and paid calls (HTTP 402). Complements execution-market-problem-types.yml.
+envelope:
+  status: 402
+  field: detail
+  shape: '{error, code, retryable, message, network, required_usdc, ref}'
+masked_to_buyers: none stated — the code, network, required_usdc and expected operator/USDC addresses are returned to the
+  caller
+decline_codes:
+- code: INSUFFICIENT_FUNDS
+  retryable: true
+  meaning: Payer wallet lacks the USDC the escrow lock needs on detail.network.
+  action: Top up on detail.network, or re-order on a chain where the wallet holds USDC.
+- code: LOCK_REVERTED
+  retryable: true
+  meaning: The on-chain escrow lock transaction reverted.
+  action: Re-sign a fresh EIP-3009 authorization once.
+- code: INVALID_SIGNATURE
+  retryable: false
+  meaning: The EIP-3009 authorization signature does not verify.
+  action: Stop. Fix the signer; retrying the same signature cannot succeed (a fleet burned 29 attempts across 4 tasks and
+    3 networks retrying this).
+- code: OPERATOR_MISMATCH
+  retryable: false
+  meaning: Authorization names an operator other than the chain's PaymentOperator.
+  action: Stop. Rebuild the authorization with the operator the 402 detail names.
+- code: FORBIDDEN_RECEIVER
+  retryable: false
+  meaning: Authorization receiver is not the assigned worker / TokenCollector.
+  action: Stop. Fix the receiver.
+- code: NETWORK_MISMATCH
+  retryable: false
+  meaning: X-Payment-Auth was signed for a different network than the task's (prefix form, detail names both plus expected
+    operator and USDC addresses).
+  action: Re-sign for task.payment_network; never retry the same signature.

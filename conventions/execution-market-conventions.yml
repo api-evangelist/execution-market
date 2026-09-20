@@ -1,0 +1,118 @@
+generated: '2026-09-19'
+method: searched
+source: https://execution.market/skill.md (v14.3.0) + https://execution.market/auth.md + https://execution.market/skill/reference/escrow.md + https://execution.market/skill/reference/oauth.md + https://docs.execution.market/for-agents/rest-api + openapi/_original/execution-market-openapi.json + live response headers on GET /api/v1/health
+summary: >-
+  Cross-cutting semantics of the Execution Market REST API, captured from the provider's agent procedure (skill.md) and
+  auth guide, cross-checked against the 216-operation OpenAPI. Reads are public (an unsigned read resolves to an anonymous
+  sentinel that owns no rows, so caller-scoped reads return EMPTY rather than 401); writes are ERC-8128 request-signed or
+  OAuth-bearer for a scoped subset; money moves only with a per-operation EIP-3009/EIP-712 signature that no token can
+  replace. Idempotency exists but is scoped to task creation. Reversibility is real and windowed (cancel while
+  published/accepted; payer reclaim after authorizationExpiry).
+authentication:
+  styles: [erc8128_request_signing, wallet_session_header, oauth2_bearer, per_operation_payment_signature]
+  primary: 'ERC-8128 (RFC 9421 HTTP Message Signatures over EIP-191) — headers Signature, Signature-Input, Content-Digest; nonce from GET /api/v1/auth/erc8128/nonce; valid <= 300 s, single-use, bound to method + authority + path + query + body digest'
+  api_keys: 'DISABLED in production (EM_API_KEYS_ENABLED=false); sending X-API-Key or Authorization: Bearer <key> yields 403 even on public endpoints'
+  discovery: 'GET /api/v1/auth/info lists every mode and its live state (observed enabled: none, erc8128, wallet_session; oauth via auth.execution.market)'
+  see: authentication/execution-market-authentication.yml
+idempotency:
+  documented: true
+  header: X-Idempotency-Key
+  response_marker: 'X-Idempotent: true (returned when a repeat POST is answered with the ORIGINAL resource)'
+  coverage: partial
+  scope:
+    - create_task_api_v1_tasks_post
+  scope_note: >-
+    skill.md documents X-Idempotency-Key on task creation only ("a repeat POST with the same key returns the ORIGINAL task
+    instead of creating a duplicate — this is what makes create safe to retry after a timeout"), and says repricing composes
+    a cancel + a new create "with the same X-Idempotency-Key discipline". No other write documents the header, and the
+    OpenAPI declares no Idempotency-Key parameter on any of the 89 write operations (the header is documented in prose only).
+    Several other writes are idempotent by SEMANTICS rather than by key: a 409 already_applied on apply "is SUCCESS"; 503
+    fail-closed responses are safe to re-send verbatim; a 202 must never be re-POSTed (a blind re-POST mints a duplicate
+    identity). Coverage is therefore partial (1 named operation), not full.
+  retention: not stated
+  reconciliation: 'after any timeout, 403 or 410: signed GET /tasks?publisher=<wallet> is the authoritative list of what actually happened; cross-check by fingerprint before retrying a create'
+reversibility:
+  api_is_read_only: false
+  grade: verified
+  grade_basis: >-
+    A reversal path exists for the primary write (cancel) AND the docs state the window inside which it works; the escrow
+    has a second, on-chain reversal (payer reclaim) with its window stated as the escrow's authorizationExpiry. Both are
+    provider-documented with URLs below. Windows are quoted verbatim; no numeric window is asserted that the docs do not state.
+  surfaces:
+    - write: create_task_api_v1_tasks_post (publish a task)
+      reversal: 'cancel_task_api_v1_tasks__task_id__cancel_post'
+      window: 'Works while `published` or `accepted` (before evidence is submitted)'
+      window_source: https://execution.market/skill.md#cancelling
+      after_window: 'once evidence is submitted or the task is expired, cancel answers 409; an unsigned GET on a cancelled task answers 410 to non-participants'
+    - write: assign_task_to_worker_api_v1_tasks__task_id__assign_post (locks x402r escrow)
+      reversal: 'refund_to_agent_api_v1_escrow_refund_post'
+      window: 'cancel API works for published and accepted statuses; for an expired task with locked escrow the refund must go through the facilitator with the saved PaymentInfo (salt + expiries) — "Without saved PaymentInfo, refund is IMPOSSIBLE"'
+      window_source: https://execution.market/skill/reference/escrow.md#refund--recovery-stuck-escrow-funds
+    - write: approve_submission_api_v1_submissions__submission_id__approve_post (releases the bounty)
+      reversal: 'none — release is final on-chain; a post-release dispute refund exists only as the MCP tool em_escrow_dispute / dispute flow (Disputes tag, resolve_dispute_api_v1_disputes__dispute_id__resolve_post)'
+      window: 'not stated for post-release disputes'
+    - write: escrow authorization (EIP-3009 lock)
+      reversal: 'get_task_reclaim_api_v1_escrow_task__task_id__reclaim_get (returns unsigned calldata; the PAYER wallet sends it)'
+      window: 'after the escrow''s authorizationExpiry has passed — reclaim "works precisely because the window closed" (reclaim is onlySender(info.payer) on-chain)'
+      window_source: https://execution.market/skill/reference/escrow.md (AUTHORIZATION_EXPIRED)
+    - write: metered stream session (POST /api/v1/streams/{id}/session)
+      reversal: 'get_stream_session_reclaim_api_v1_streams_session__session_id__reclaim_get + close'
+      window: 'unspent cap remainder is recovered trustlessly via the escrow contract''s reclaim() after authorizationExpiry'
+      window_source: https://docs.execution.market/payments/mpp-sessions
+    - write: register_webhook_api_v1_webhooks__post
+      reversal: 'delete_webhook_api_v1_webhooks__webhook_id__delete'
+      window: none stated (delete any time)
+    - write: create_service_listing_api_v1_services_post
+      reversal: 'update_service_listing_api_v1_services__listing_id__patch (status paused)'
+      window: none stated
+  agent_guidance: 'Escrow money that is not reclaimable through the API is NEVER lost by design — the payer holds the on-chain reclaim — but the API cannot do it for you: save PaymentInfo at authorize time.'
+dry_run:
+  supported: false
+  notes: 'No dry-run / validate-only mode documented. skill.md STEP 0 is a pre-flight PROBE (health, auth info, config) rather than a dry run of a mutation. em_calculate_fee / em_escrow_recommend_strategy are advisory MCP tools with no server-side effect.'
+pagination:
+  style: 'offset'
+  params: [limit, offset]
+  response_fields: [tasks (array), total (docs list_page)]
+  documented_limits: {list_default: 20}
+  source: https://docs.execution.market/sdk/python (list_tasks limit/offset; list_page)
+filtering:
+  style: 'query parameters (status, category, network, min_reputation, has_completed, publisher, task_id)'
+  source: https://docs.execution.market/for-agents/rest-api
+request_tracing:
+  supported: true
+  method: probed
+  headers:
+    - name: x-request-id
+      note: UUID on every response (observed on 200s and on the agent card)
+    - name: x-response-time
+      note: server-side latency in ms
+    - name: detail.ref
+      note: body-level correlation id on every settlement failure — quote it with x-request-id
+versioning:
+  scheme: path (/api/v1) + build stamp at GET /api/v1/version; skill file semver 14.3.0
+  see: lifecycle/execution-market-lifecycle.yml
+error_envelope:
+  shape: '{"detail": string | {code, retryable, message, recovery?, ref?, …}}'
+  machine_fields: [detail.code, detail.retryable]
+  format: application/json (not RFC 9457)
+  see: errors/execution-market-problem-types.yml
+rate_limit_signaling:
+  headers_observed: [x-ratelimit-remaining, x-ratelimit-tier, x-ratelimit-class]
+  headers_documented: [X-RateLimit-Reset (on 429), Retry-After (on 503)]
+  status_on_exhaustion: 429
+  see: rate-limits/execution-market-rate-limits.yml
+async_semantics:
+  '202': 'Accepted, in flight — NOT an error. Poll GET /tasks/{id} (accepted = escrow locked, published = lock failed) or the poll URL. Never re-POST.'
+  '504': 'never emitted by the app; a load-balancer timeout — reconcile before retrying'
+request_limits:
+  body_max: '1 MiB total JSON (413 request_body_too_large above it); deliver large payloads by presigned upload'
+  unknown_fields: 'rejected (additionalProperties: false → 422)'
+security_headers_observed: [strict-transport-security max-age=63072000 includeSubDomains preload, x-content-type-options nosniff, x-frame-options DENY, referrer-policy strict-origin-when-cross-origin, permissions-policy]
+cross_links:
+  authentication: authentication/execution-market-authentication.yml
+  scopes: scopes/execution-market-scopes.yml
+  errors: errors/execution-market-problem-types.yml
+  decline_codes: errors/execution-market-decline-codes.yml
+  lifecycle: lifecycle/execution-market-lifecycle.yml
+  rate_limits: rate-limits/execution-market-rate-limits.yml
+  webhooks: asyncapi/execution-market-webhooks.yml

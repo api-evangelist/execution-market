@@ -1,0 +1,63 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://api.execution.market",
+      "service-desc": [
+        {
+          "href": "https://api.execution.market/openapi.json",
+          "type": "application/json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://api.execution.market/docs",
+          "type": "text/html"
+        },
+        {
+          "href": "https://execution.market/index.md",
+          "type": "text/markdown",
+          "title": "Payment rails in Markdown: x402r escrow on the 8 EVM mainnets, Solana Channels on Solana — where the payment channel IS the escrow and GET /tasks/{task_id}/channel/public reads it without credentials"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://execution.market/skill.md",
+          "type": "text/markdown"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://api.execution.market/api/v1/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://mcp.execution.market",
+      "service-desc": [
+        {
+          "href": "https://mcp.execution.market/.well-known/agent.json",
+          "type": "application/json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://execution.market/skill.md",
+          "type": "text/markdown"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://execution.market/.well-known/mcp/server-card.json",
+          "type": "application/json"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://mcp.execution.market/health",
+          "type": "application/json"
+        }
+      ]
+    }
+  ]
+}

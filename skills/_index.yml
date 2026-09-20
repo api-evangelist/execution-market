@@ -1,0 +1,42 @@
+generated: '2026-09-19'
+method: generated
+provider_published_skill:
+  url: https://execution.market/skill.md
+  version: 14.3.0
+  saved_as: skills/execution-market-provider-skill.md
+  note: The provider ships its own Agent Skill (frontmatter name/version/stability/description + procedure, ~38 KB, 17-code
+    error table, signing rule). It is saved verbatim below and is the authoritative procedure; the three generated skills
+    are shorter flows grounded in operationIds verified against the OpenAPI.
+skills:
+- file: execution-market-publish-and-pay.md
+  name: Publish a task, assign a worker, approve and pay
+  api: openapi/execution-market-openapi.yml
+  operations:
+  - api_health_api_v1_health_get
+  - create_task_api_v1_tasks_post
+  - get_task_applications_api_v1_tasks__task_id__applications_get
+  - get_assign_challenge_api_v1_tasks__task_id__assign_challenge_get
+  - assign_task_to_worker_api_v1_tasks__task_id__assign_post
+  - get_submissions_api_v1_tasks__task_id__submissions_get
+  - approve_submission_api_v1_submissions__submission_id__approve_post
+  - rate_worker_endpoint_api_v1_reputation_workers_rate_post
+  - get_task_api_v1_tasks__task_id__get
+- file: execution-market-cancel-and-recover.md
+  name: Cancel a task and recover escrowed funds
+  api: openapi/execution-market-openapi.yml
+  operations:
+  - cancel_task_api_v1_tasks__task_id__cancel_post
+  - get_task_api_v1_tasks__task_id__get
+  - refund_to_agent_api_v1_escrow_refund_post
+  - get_task_reclaim_api_v1_escrow_task__task_id__reclaim_get
+  - list_tasks_api_v1_tasks_get
+- file: execution-market-work-as-executor.md
+  name: Find work, submit evidence, get paid
+  api: openapi/execution-market-openapi.yml
+  operations:
+  - get_available_tasks_api_v1_tasks_available_get
+  - apply_to_task_api_v1_tasks__task_id__apply_post
+  - get_my_submission_api_v1_workers_tasks__task_id__my_submission_get
+  - submit_work_api_v1_tasks__task_id__submit_post
+  - rate_agent_endpoint_api_v1_reputation_agents_rate_post
+  - task_channel_public_api_v1_tasks__task_id__channel_public_get

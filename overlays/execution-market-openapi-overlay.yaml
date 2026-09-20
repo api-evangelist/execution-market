@@ -1,0 +1,63 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the Execution Market API
+  version: '2026-09-19'
+extends: openapi/execution-market-openapi.yml
+x-generated: '2026-09-19'
+x-method: generated
+actions:
+- target: $.info
+  update:
+    x-apis-io:
+      provider: execution-market
+      profile: https://apis.io/providers/execution-market/
+    termsOfService: https://api.execution.market/api/v1/legal/terms
+- target: $.servers[?(@.url=="http://localhost:8000")]
+  remove: true
+  description: drop the local-development server from the published contract
+- target: $.externalDocs
+  update:
+    x-agent-skill: https://execution.market/skill.md
+    x-llms-txt: https://execution.market/llms.txt
+    x-api-catalog: https://execution.market/.well-known/api-catalog
+    x-agent-card: https://api.execution.market/.well-known/agent-card.json
+    x-mcp-server: https://mcp.execution.market/mcp/
+- target: $.components.securitySchemes.erc8128
+  update:
+    x-standard:
+    - ERC-8128
+    - RFC 9421
+    - RFC 9530
+    x-nonce-endpoint: /api/v1/auth/erc8128/nonce
+- target: $.components.securitySchemes.oauthBearer
+  update:
+    x-authorization-server-metadata: https://auth.execution.market/.well-known/oauth-authorization-server
+    x-protected-resource-metadata: https://mcp.execution.market/.well-known/oauth-protected-resource/mcp
+    x-pkce: S256 mandatory
+- target: $.paths["/api/v1/tasks"].post
+  update:
+    x-idempotency:
+      header: X-Idempotency-Key
+      response_marker: X-Idempotent
+      source: https://execution.market/skill.md
+    x-rate-limit: 100/hour per publisher
+    x-reversibility:
+      operation: cancel_task_api_v1_tasks__task_id__cancel_post
+      window: while published or accepted (before evidence is submitted)
+- target: $.paths["/api/v1/tasks/{task_id}/assign"].post
+  update:
+    x-consequence: physical — locks USDC in x402r escrow; requires a per-operation EIP-3009 signature in X-Payment-Auth
+    x-reversibility:
+      operation: refund_to_agent_api_v1_escrow_refund_post / get_task_reclaim_api_v1_escrow_task__task_id__reclaim_get
+      window: refund while published/accepted; payer reclaim after authorizationExpiry
+- target: $.paths["/api/v1/submissions/{submission_id}/approve"].post
+  update:
+    x-consequence: physical — releases the escrowed bounty on-chain in the same call; not reversible
+    x-settlement-failure-codes: errors/execution-market-problem-types.yml#settlement_failure_codes
+- target: $.paths["/api/v1/tasks/batch"].post
+  update:
+    x-rate-limit: 10/hour per publisher
+    x-note: summary reads (DISABLED) in the live spec
+- target: $.paths["/api/v1/escrow/release"].post
+  update:
+    x-deprecation-note: 'deprecated: true in the source; approve settles the payout in the same call (skill.md STEP 5)'
