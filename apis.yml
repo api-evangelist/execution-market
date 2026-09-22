@@ -49,6 +49,15 @@ apis:
   - Stablecoins
   - x402
   - Reputation
+  - Webhook
+  tags_raw:
+  - Task Marketplace
+  - AI Agents
+  - Payments
+  - Escrow
+  - Stablecoins
+  - x402
+  - Reputation
   - Webhooks
   properties:
   - type: OpenAPI
@@ -94,6 +103,11 @@ apis:
   humanURL: https://docs.execution.market/for-agents/mcp-tools
   baseURL: https://mcp.execution.market/mcp/
   tags:
+  - MCP
+  - AI Agents
+  - Task Marketplace
+  - Authentication
+  tags_raw:
   - MCP
   - AI Agents
   - Task Marketplace
