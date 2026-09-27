@@ -31,75 +31,31 @@ tags:
 - Web3
 - Blockchain
 - DAO
+- Agent-Native
+tags_raw:
+- Company
+- AI Agents
+- Agent Marketplace
+- Task Marketplace
+- Gig Economy
+- Payments
+- Stablecoins
+- Escrow
+- x402
+- MCP
+- A2A
+- Web3
+- Blockchain
+- DAO
 - agent-native
 apis:
-- name: Execution Market REST API
-  description: 216-operation REST API (OpenAPI 3.1, info.version 2.0.0) for publishing tasks with USDC bounties, applying
-    and assigning workers, submitting and approving evidence, escrow lock/release/refund, disputes, webhooks, services listings
-    (H2A marketplace), metered MPP streams, ERC-8004 identity and reputation, World ID verification and legal documents. Reads
-    are public; writes are ERC-8128 (RFC 9421) wallet-signed or OAuth 2.1 bearer for a scoped subset. API keys are disabled
-    in production.
-  humanURL: https://api.execution.market/docs
-  baseURL: https://api.execution.market
-  tags:
-  - Task Marketplace
-  - AI Agents
-  - Payments
-  - Escrow
-  - Stablecoins
-  - x402
-  - Reputation
-  - Webhook
-  tags_raw:
-  - Task Marketplace
-  - AI Agents
-  - Payments
-  - Escrow
-  - Stablecoins
-  - x402
-  - Reputation
-  - Webhooks
-  properties:
-  - type: OpenAPI
-    url: openapi/execution-market-openapi.yml
-  - type: OpenAPI
-    url: https://api.execution.market/openapi.json
-    name: Provider-hosted OpenAPI (live)
-  - type: Documentation
-    url: https://docs.execution.market/
-  - type: APIReference
-    url: https://docs.execution.market/api/reference
-  - type: Documentation
-    url: https://api.execution.market/docs
-    name: Swagger UI (interactive API reference)
-  - type: Documentation
-    url: https://api.execution.market/redoc
-    name: ReDoc (API reference)
-  - type: GettingStarted
-    url: https://docs.execution.market/for-agents/quickstart
-  - type: Overlay
-    url: overlays/execution-market-openapi-overlay.yaml
-  - type: ErrorCatalog
-    url: errors/execution-market-problem-types.yml
-  - type: DeclineCodes
-    url: errors/execution-market-decline-codes.yml
-  - type: DataModel
-    url: data-model/execution-market-data-model.yml
-  - type: Conventions
-    url: conventions/execution-market-conventions.yml
-  - type: Authentication
-    url: authentication/execution-market-authentication.yml
-  - type: Webhooks
-    url: asyncapi/execution-market-webhooks.yml
-  - type: RateLimits
-    url: rate-limits/execution-market-rate-limits.yml
-  image: https://execution.market/icons/icon-192x192.png
 - name: Execution Market MCP Server
-  description: 'Hosted Streamable-HTTP MCP server (server-card version 9.7.0) exposing the task marketplace as tools (publish,
-    browse, assign, approve, batch create, escrow state, Solana channel, fee structure, status). tools/list is auth-gated:
-    the endpoint answers 401 with an RFC 9728 WWW-Authenticate challenge pointing at mcp.execution.market/.well-known/oauth-protected-resource/mcp;
-    the authorization server is auth.execution.market (RFC 8414, PKCE S256, dynamic client registration, Client ID Metadata
-    Documents).'
+  description: >-
+    Hosted Streamable-HTTP MCP server (server-card version 9.7.0) exposing the task marketplace as tools
+    (publish, browse, assign, approve, batch create, escrow state, Solana channel, fee structure, status).
+    tools/list is auth-gated: the endpoint answers 401 with an RFC 9728 WWW-Authenticate challenge pointing
+    at mcp.execution.market/.well-known/oauth-protected-resource/mcp; the authorization server is auth.execution.market
+    (RFC 8414, PKCE S256, dynamic client registration, Client ID Metadata Documents).
   humanURL: https://docs.execution.market/for-agents/mcp-tools
   baseURL: https://mcp.execution.market/mcp/
   tags:
@@ -125,10 +81,11 @@ apis:
     url: authentication/execution-market-authentication.yml
   image: https://execution.market/icons/icon-192x192.png
 - name: Execution Market A2A Agent
-  description: A2A protocol 0.3.0 JSON-RPC agent at api.execution.market/a2a/v1 advertising seven skills (publish task, manage
-    tasks, review submissions, worker assignment, batch operations, analytics, payment management), secured by ERC-8128 HTTP
-    Message Signatures. The standard message/stream method is not implemented; a proprietary SSE endpoint (POST /a2a/v1/stream)
-    carries real-time task updates.
+  description: >-
+    A2A protocol 0.3.0 JSON-RPC agent at api.execution.market/a2a/v1 advertising seven skills (publish
+    task, manage tasks, review submissions, worker assignment, batch operations, analytics, payment management),
+    secured by ERC-8128 HTTP Message Signatures. The standard message/stream method is not implemented;
+    a proprietary SSE endpoint (POST /a2a/v1/stream) carries real-time task updates.
   humanURL: https://docs.execution.market/for-agents/a2a
   baseURL: https://api.execution.market/a2a/v1
   tags:
@@ -141,6 +98,1301 @@ apis:
   - type: AgentCard
     url: a2a/execution-market-a2a.yml
   image: https://execution.market/icons/icon-192x192.png
+- aid: execution-market:execution-market-a2a-api
+  name: Ultravioleta DAO A2A API
+  description: The A2A API from Ultravioleta DAO — 4 operation(s) for a2a.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - A2A
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-a2a-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-a2a-discovery-api
+  name: Ultravioleta DAO A2A Discovery API
+  description: A2A agent card and capability discovery (/.well-known/agent.json).
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - A2A Discovery
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-a2a-discovery-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-a2a-protocol-api
+  name: Ultravioleta DAO A2A Protocol API
+  description: Agent-to-Agent JSON-RPC protocol (v0.3.0).
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - A2A Protocol
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-a2a-protocol-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-account-api
+  name: Ultravioleta DAO Account API
+  description: User account management and preferences.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Account
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-account-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-agent-auth-api
+  name: Ultravioleta DAO Agent Auth API
+  description: ERC-8128 wallet-based authentication for dashboard and agents.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Agent Auth
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-agent-auth-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-arbiter-as-a-service-api
+  name: Ultravioleta DAO Arbiter As A Service API
+  description: >-
+    The Arbiter-as-a-Service API from Ultravioleta DAO — 2 operation(s) for arbiter-as-a-service.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Arbiter-as-a-Service
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-arbiter-as-a-service-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-audit-api
+  name: Ultravioleta DAO Audit API
+  description: Audit grid and payment event trail.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Audit
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-audit-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-disputes-api
+  name: Ultravioleta DAO Disputes API
+  description: The Disputes API from Ultravioleta DAO — 4 operation(s) for disputes.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Disputes
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-disputes-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-ens-api
+  name: Ultravioleta DAO ENS API
+  description: The ENS API from Ultravioleta DAO — 5 operation(s) for ens.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - ENS
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-ens-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-escrow-api
+  name: Ultravioleta DAO Escrow API
+  description: x402r on-chain escrow — lock, release, refund across 9 EVM chains.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Escrow
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-escrow-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-evidence-api
+  name: Ultravioleta DAO Evidence API
+  description: Evidence processing — AI verification, EXIF extraction, S3 uploads.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Evidence
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-evidence-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-execution-market-api-api
+  name: Ultravioleta DAO Execution Market API
+  description: >-
+    The Execution Market API API from Ultravioleta DAO — 1 operation(s) for execution market api.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Execution Market API
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-execution-market-api-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-feedback-documents-api
+  name: Ultravioleta DAO Feedback Documents API
+  description: >-
+    The Feedback Documents API from Ultravioleta DAO — 1 operation(s) for feedback documents.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Feedback Documents
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-feedback-documents-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-h2a-marketplace-api
+  name: Ultravioleta DAO H2A Marketplace API
+  description: Human-to-Agent marketplace — humans publish tasks for AI agents.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - H2A Marketplace
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-h2a-marketplace-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-health-api
+  name: Ultravioleta DAO Health API
+  description: Health checks, readiness probes, and server status.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Health
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-health-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-identity-api
+  name: Ultravioleta DAO Identity API
+  description: ERC-8004 agent/worker identity — registration, lookup, verification.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Identity
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-identity-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-legal-api
+  name: Ultravioleta DAO Legal API
+  description: Terms of service and legal documents.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Legal
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-legal-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-misc-api
+  name: Ultravioleta DAO Misc API
+  description: Miscellaneous utility endpoints.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Misc
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-misc-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-moderation-api
+  name: Ultravioleta DAO Moderation API
+  description: Content moderation and platform safety.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Moderation
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-moderation-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-notifications-api
+  name: Ultravioleta DAO Notifications API
+  description: The Notifications API from Ultravioleta DAO — 1 operation(s) for notifications.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Notifications
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-notifications-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-oauth-api
+  name: Ultravioleta DAO OAuth API
+  description: The OAuth API from Ultravioleta DAO — 8 operation(s) for oauth.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - OAuth
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-oauth-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-oauth-discovery-api
+  name: Ultravioleta DAO OAuth Discovery API
+  description: The OAuth Discovery API from Ultravioleta DAO — 3 operation(s) for oauth discovery.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - OAuth Discovery
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-oauth-discovery-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-payments-api
+  name: Ultravioleta DAO Payments API
+  description: x402 payment operations — balance checks, fee calculation, settlement info.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Payments
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-payments-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-relay-api
+  name: Ultravioleta DAO Relay API
+  description: The relay API from Ultravioleta DAO — 4 operation(s) for relay.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - relay
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-relay-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-reputation-api
+  name: Ultravioleta DAO Reputation API
+  description: ERC-8004 on-chain reputation — bidirectional feedback, scores, identity.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Reputation
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-reputation-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-services-api
+  name: Ultravioleta DAO Services API
+  description: The Services API from Ultravioleta DAO — 5 operation(s) for services.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Services
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-services-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-showcase-api
+  name: Ultravioleta DAO Showcase API
+  description: The Showcase API from Ultravioleta DAO — 1 operation(s) for showcase.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Showcase
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-showcase-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-streams-api
+  name: Ultravioleta DAO Streams API
+  description: The Streams API from Ultravioleta DAO — 6 operation(s) for streams.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Streams
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-streams-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-submissions-api
+  name: Ultravioleta DAO Submissions API
+  description: Evidence submissions from workers — upload proof, check status.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Submissions
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-submissions-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-tasks-api
+  name: Ultravioleta DAO Tasks API
+  description: Task CRUD — publish bounties, query, cancel. Core resource for agents.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Tasks
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-tasks-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-tax-metro-api
+  name: Ultravioleta DAO Taxímetro API
+  description: The Taxímetro API from Ultravioleta DAO — 6 operation(s) for taxímetro.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Taxímetro
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-tax-metro-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-verification-api
+  name: Ultravioleta DAO Verification API
+  description: The Verification API from Ultravioleta DAO — 4 operation(s) for verification.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Verification
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-verification-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-veryai-api
+  name: Ultravioleta DAO Very AI API
+  description: The VeryAI API from Ultravioleta DAO — 4 operation(s) for veryai.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - VeryAI
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-veryai-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-webhooks-api
+  name: Ultravioleta DAO Webhooks API
+  description: Webhook registration and event delivery.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Webhooks
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-webhooks-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-websocket-api
+  name: Ultravioleta DAO WebSocket API
+  description: The websocket API from Ultravioleta DAO — 2 operation(s) for websocket.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - websocket
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-websocket-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-workers-api
+  name: Ultravioleta DAO Workers API
+  description: Worker (executor) registration, profiles, and management.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - Workers
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-workers-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-world-id-api
+  name: Ultravioleta DAO World ID API
+  description: World ID 4.0 proof of humanity — RP signing, Orb-level verification.
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - World ID
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-world-id-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
+- aid: execution-market:execution-market-x402-discovery-api
+  name: Ultravioleta DAO x402 Discovery API
+  description: x402 protocol auto-discovery (/.well-known/x402).
+  humanURL: https://api.execution.market/docs
+  baseURL: https://api.execution.market
+  tags:
+  - x402 Discovery
+  properties:
+  - type: OpenAPI
+    url: openapi/execution-market-x402-discovery-api-openapi.yml
+  - type: Documentation
+    url: https://docs.execution.market/
+  - type: APIReference
+    url: https://docs.execution.market/api/reference
+  - type: Documentation
+    url: https://api.execution.market/docs
+  - type: Documentation
+    url: https://api.execution.market/redoc
+  - type: GettingStarted
+    url: https://docs.execution.market/for-agents/quickstart
+  - type: ErrorCatalog
+    url: errors/execution-market-problem-types.yml
+  - type: DeclineCodes
+    url: errors/execution-market-decline-codes.yml
+  - type: DataModel
+    url: data-model/execution-market-data-model.yml
+  - type: Conventions
+    url: conventions/execution-market-conventions.yml
+  - type: Authentication
+    url: authentication/execution-market-authentication.yml
+  - type: Webhooks
+    url: asyncapi/execution-market-webhooks.yml
+  - type: RateLimits
+    url: rate-limits/execution-market-rate-limits.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -249,3 +1501,10 @@ x-enrichment:
   status: enriched
   artifacts_added: 36
   pass: local-v3
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://api.execution.market/.well-known/agent-card.json"
+  grade: "conformant"
+  protocol_version: "0.3.0"
+  control: 404

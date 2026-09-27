@@ -1,0 +1,934 @@
+openapi: 3.2.0
+info:
+  title: Execution Market Account API
+  version: 2.0.0
+  contact:
+    name: Ultravioleta DAO
+    url: https://ultravioletadao.xyz/
+    email: ultravioletadao@gmail.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  x-guidance: 'Hiring marketplace across {human, agent, robot} x {human, agent, robot}. Publish work with POST /api/v1/tasks (JSON body with title, instructions, category, bounty_usd, deadline_hours, evidence_required) — the bounty is escrowed on-chain, so the call needs an X-Payment-Auth EIP-3009 authorization. Browse open work with GET /api/v1/tasks/available (free, no auth). Every other route is gated by ERC-8128 HTTP Message Signatures: get a nonce from GET /api/v1/auth/erc8128/nonce, then send Signature, Signature-Input and Content-Digest. Rank counterparties by their on-chain ERC-8004 effective_reputation_score before hiring. Full agent guide: https://execution.market/skill.md'
+  x-logo:
+    url: https://execution.market/logo.png
+    altText: Execution Market Logo
+  x-payment-info:
+    protocol: x402
+    version: '1.0'
+    discovery: /.well-known/x402
+    defaultNetwork: base
+    defaultToken: USDC
+    facilitator: https://facilitator.ultravioletadao.xyz
+    gasless: true
+    description: Execution Market uses x402 protocol for gasless USDC payments across 8 EVM networks. Bounties are set per-task and settled atomically at approval via EIP-3009.
+  x-refined-note:
+  - x-source differs across the merged source definitions and was not carried
+  description: 'Operations tagged Account across 2 of this provider''s published API definitions: execution-market-openapi.json, execution-market-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.execution.market
+  description: Production server
+- url: http://localhost:8000
+  description: Local development
+security:
+- erc8128: []
+tags:
+- name: Account
+  description: User account management and preferences.
+paths:
+  /api/v1/account:
+    delete:
+      tags:
+      - Account
+      summary: Delete account
+      description: Anonymize the current user's account. Nulls out personal data (display_name, bio, avatar_url, email, wallet_address) and removes block records. Tasks and submissions are kept anonymized for audit.
+      operationId: delete_account_api_v1_account_delete
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Bearer <supabase_jwt>
+          title: Authorization
+        description: Bearer <supabase_jwt>
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountDeleteResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://api.execution.market
+      description: Production server
+    - url: http://localhost:8000
+      description: Local development
+  /api/v1/account/export:
+    get:
+      tags:
+      - Account
+      summary: Export account data
+      description: Export all user data as JSON (GDPR Article 20 - Right to data portability). Returns executor profile, tasks, submissions, and reports.
+      operationId: export_account_data_api_v1_account_export_get
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Bearer <supabase_jwt>
+          title: Authorization
+        description: Bearer <supabase_jwt>
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountExportResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://api.execution.market
+      description: Production server
+    - url: http://localhost:8000
+      description: Local development
+  /api/v1/account/solana-payout-address:
+    patch:
+      tags:
+      - Account
+      summary: Bind a Solana payout address
+      description: 'Bind the Solana pubkey where this executor receives Solana bounties. This is NOT an identity change: the executor keeps its EVM `wallet_address`, which is what ERC-8128 auth and the ERC-8004 identity lookup key off. It only answers where Solana bounties land. Ownership is proven with an ed25519 signature by the Solana key itself. The challenge MUST be exactly: `Execution Market: set solana payout address to for executor at `, with a timestamp within the last 10 minutes. The signature is base58 (64 bytes), as produced by every Solana wallet. **Who may call it:** a human with a Bearer Supabase JWT, or an agent/robot with an ERC-8128-signed request — agents have no JWT, so for them the executor is resolved from the wallet that signed the request and must be the one the challenge names. Naming an executor bound to a different wallet is a 401, never a write.'
+      operationId: set_solana_payout_address_api_v1_account_solana_payout_address_patch
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Bearer <supabase_jwt>
+          title: Authorization
+        description: Bearer <supabase_jwt>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolanaPayoutAddressRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolanaPayoutAddressResponse'
+        '400':
+          description: Malformed or stale challenge message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ed25519 signature does not prove control of that address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Executor profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://api.execution.market
+      description: Production server
+    - url: http://localhost:8000
+      description: Local development
+  /api/v1/account/wallet:
+    patch:
+      tags:
+      - Account
+      summary: Change wallet address
+      description: 'Change the executor''s wallet address. The new wallet must sign a challenge message to prove ownership. The challenge MUST be:
+
+
+        ```
+
+        Execution Market: change wallet to for executor at
+
+        ```
+
+
+        Timestamp must be within the last 10 minutes. The change is rejected if the executor has any in-flight task assignments (accepted, in_progress, submitted, verifying), to avoid losing escrow payouts. ERC-8004 identity is automatically re-registered on the next task application via the gasless Facilitator path.'
+      operationId: update_wallet_address_api_v1_account_wallet_patch
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Bearer <supabase_jwt>
+          title: Authorization
+        description: Bearer <supabase_jwt>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWalletRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateWalletResponse'
+        '400':
+          description: Invalid signature format or stale/malformed challenge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Signature does not match the new wallet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Executor profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Wallet already linked elsewhere or in-flight assignment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://api.execution.market
+      description: Production server
+    - url: http://localhost:8000
+      description: Local development
+  /api/v1/account/link-wallet:
+    post:
+      tags:
+      - Account
+      summary: Link wallet to current session
+      description: 'Bind the caller''s executor profile to their current Supabase session so worker-auth endpoints (apply, submit, withdraw) can resolve it.
+
+
+        This is the bootstrap step that replaces the revoked `link_wallet_to_session` RPC (migration 092) and the anon-revoked `get_or_create_executor` (migration 111). The wallet MUST sign:
+
+
+        ```
+
+        Execution Market: link wallet to Supabase user at
+
+        ```
+
+
+        The `` is the caller''s JWT subject — binding it into the signed message stops a captured signature from being replayed under a different JWT to hijack the executor. The signature proves ownership of the wallet, which authorizes binding `executors.user_id` to the JWT `sub` (the ''proven owner'' rule from migration 111). Timestamp must be within the last 10 minutes. This endpoint does NOT use worker-auth (that''s circular — the link is what makes worker-auth resolvable); it validates the raw Supabase JWT plus the wallet signature directly.
+
+
+        **Smart-wallet signatures (ERC-1271 / ERC-6492)**: signatures that are not 65 bytes are verified on-chain via `isValidSignature` against the wallet contract on the platform''s default network. ERC-6492 envelopes are unwrapped for DEPLOYED wallets; undeployed (counterfactual) 6492 wallets are rejected with a distinct error (`erc6492_wallet_undeployed`) until the wallet is deployed.
+
+
+        **Alternative proof (Dynamic embedded wallets only)**: pass `dynamic_jwt` (the Dynamic session JWT) instead of `message`+`signature`. The server verifies it against Dynamic''s JWKS (RS256, exp, `scope` includes `user:basic`, `environment_id` match) and requires the wallet in `verified_credentials[]` with `wallet_provider == ''embeddedWallet''`. External wallets must keep using the signature flow.'
+      operationId: link_wallet_to_session_api_v1_account_link_wallet_post
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Bearer <supabase_jwt>
+          title: Authorization
+        description: Bearer <supabase_jwt>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkWalletRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkWalletResponse'
+        '400':
+          description: Invalid signature format or stale/malformed challenge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid Supabase JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ownership proof rejected (signature or Dynamic JWT)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Dynamic JWKS or verification RPC unreachable — retry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://api.execution.market
+      description: Production server
+    - url: http://localhost:8000
+      description: Local development
+  /api/v1/account/dx402-key:
+    put:
+      tags:
+      - Account
+      summary: Declare your DX402 decryption key
+      description: Declare the PUBLIC key that durable evidence for your purchases should be sealed to. Send it once; every task you publish afterwards is anchored to it. **Why this exists:** on the recommended lock path you lock the escrow yourself through the SDK and hand EM an already-mined `escrow_tx`. EM never sees your signature, and the lock transaction is signed by the Facilitator (it is gasless), so there is nothing for us to recover a key from. Declaring one closes that. **Do not declare your payment key.** Generate a keypair that only ever decrypts -- no funds, no gas. A leak then costs you readable evidence instead of your wallet. It is also the only way to read your own evidence when you pay from a custodial wallet, which signs but does not do ECDH.
+      operationId: set_dx402_key_api_v1_account_dx402_key_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dx402KeyRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dx402KeyResponse'
+        '400':
+          description: Malformed public key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://api.execution.market
+      description: Production server
+    - url: http://localhost:8000
+      description: Local development
+  /api/v1/account/dx402-key/{wallet_address}:
+    get:
+      tags:
+      - Account
+      summary: Read a wallet's declared DX402 key
+      description: 'The declared public key for a wallet, or `null` when none is declared. Public on purpose: a seller who wants to anchor an artifact EM never holds needs the buyer''s key, and it is public material either way.'
+      operationId: get_dx402_key_api_v1_account_dx402_key__wallet_address__get
+      parameters:
+      - name: wallet_address
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Wallet Address
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dx402KeyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    servers:
+    - url: https://api.execution.market
+      description: Production server
+    - url: http://localhost:8000
+      description: Local development
+  /api/v1/account/paybox-link:
+    get:
+      tags:
+      - Account
+      summary: PayBox link of the authenticated wallet
+      description: 'Whether the caller''s wallet is linked through **Continue with PayBox**, and whether that link can sign (`status`: `linked`, `signing_key_missing`, `unlinked_by_paybox`, `unlinked_by_user`, `superseded` or `unlinked`).
+
+
+        Asks PayBox once on every call, so a link the owner revoked IN PayBox reads here as `unlinked_by_paybox` — and from then on it cannot sign anything. Never returns a token or a key.'
+      operationId: get_paybox_link_api_v1_account_paybox_link_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security: []
+    delete:
+      tags:
+      - Account
+      summary: Unlink PayBox from the authenticated wallet
+      description: 'Revokes the PayBox link of the caller''s wallet from Execution Market''s side and deletes every stored PayBox secret (access token, refresh token, signing key). Every wallet on the same PayBox grant is unlinked with it.
+
+
+        PayBox publishes no revocation endpoint, so this cannot remove the Execution Market agent from your PayBox vault — do that in PayBox. What it guarantees is that Execution Market holds nothing that could ask PayBox for a signature.'
+      operationId: delete_paybox_link_api_v1_account_paybox_link_delete
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+    servers:
+    - url: https://api.execution.market
+      description: Production server
+    - url: http://localhost:8000
+      description: Local development
+components:
+  schemas:
+    AccountExportResponse:
+      properties:
+        exported_at:
+          type: string
+          title: Exported At
+          description: Export timestamp (ISO 8601)
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the exporting executor
+        profile:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Profile
+          description: Full executor profile row
+        submissions:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Submissions
+          description: All submissions by this executor
+        applications:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Applications
+          description: All task applications by this executor
+        reports:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Reports
+          description: Reports filed by this user
+        blocked_users:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Blocked Users
+          description: Block records owned by this user
+      type: object
+      required:
+      - exported_at
+      - executor_id
+      - submissions
+      - applications
+      - reports
+      - blocked_users
+      title: AccountExportResponse
+      description: 'GDPR data export payload (GET /account/export).
+
+
+        Documentation-only: the endpoint returns a JSONResponse (with a
+
+        Content-Disposition attachment header), which bypasses response-model
+
+        serialization at runtime — no keys are filtered.'
+    Dx402KeyResponse:
+      properties:
+        wallet_address:
+          type: string
+          title: Wallet Address
+          description: Wallet the key belongs to.
+        public_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Public Key
+          description: The declared public key, or null if none is declared.
+        key_alg:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Key Alg
+          description: Wire form of the key.
+        updated_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated At
+          description: When it was last set.
+      type: object
+      required:
+      - wallet_address
+      title: Dx402KeyResponse
+      description: The declared key currently on file for a wallet.
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
+          type: string
+          title: Message
+          description: Human-readable error message
+        details:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Details
+          description: Additional error context
+      type: object
+      required:
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LinkWalletResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor bound to the session
+        wallet_address:
+          type: string
+          title: Wallet Address
+          description: Linked wallet address (lowercase)
+        linked:
+          type: boolean
+          title: Linked
+          description: False when the wallet was already linked to this session (no-op)
+      type: object
+      required:
+      - message
+      - executor_id
+      - wallet_address
+      - linked
+      title: LinkWalletResponse
+      description: Response for linking a wallet to the current session.
+    SolanaPayoutAddressRequest:
+      properties:
+        solana_payout_address:
+          type: string
+          maxLength: 44
+          minLength: 32
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          title: Solana Payout Address
+          description: Solana pubkey (base58) that will receive Solana bounties.
+        message:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Message
+          description: 'Challenge that was signed. Exact form: `Execution Market: set solana payout address to <address> for executor <executor_id> at <ISO8601 UTC>`'
+        signature:
+          type: string
+          maxLength: 128
+          minLength: 64
+          pattern: ^[1-9A-HJ-NP-Za-km-z]+$
+          title: Signature
+          description: Ed25519 signature of `message`, base58-encoded (64 bytes).
+      additionalProperties: false
+      type: object
+      required:
+      - solana_payout_address
+      - message
+      - signature
+      title: SolanaPayoutAddressRequest
+      description: 'Bind a Solana payout address to the authenticated executor.
+
+
+        This is NOT an identity change. The executor keeps its EVM
+
+        ``wallet_address`` — auth (ERC-8128, secp256k1 only) and the ERC-8004
+
+        identity lookup both key off that. This is only "where Solana bounties
+
+        land", and it is proven with an **ed25519** signature by the Solana key
+
+        itself: without that proof anyone could point another executor''s bounty at
+
+        their own wallet.'
+    AccountDeleteResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+      type: object
+      required:
+      - message
+      title: AccountDeleteResponse
+      description: Response for account deletion (anonymization).
+    UpdateWalletRequest:
+      properties:
+        new_wallet_address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+          title: New Wallet Address
+          description: The wallet to switch to (0x-prefixed, 42 chars)
+        message:
+          type: string
+          maxLength: 300
+          minLength: 80
+          title: Message
+          description: 'Exact human-readable message that was signed. Format: ''Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601 UTC>'''
+        signature:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{130}$
+          title: Signature
+          description: EIP-191 signature of the message, signed by new_wallet_address
+      additionalProperties: false
+      type: object
+      required:
+      - new_wallet_address
+      - message
+      - signature
+      title: UpdateWalletRequest
+      description: 'Request to change the executor''s wallet address.
+
+
+        The new wallet must sign the exact ``message`` to prove ownership. The
+
+        message MUST follow the format
+
+        ``"Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601>"``
+
+        and the timestamp must be within the last 10 minutes (replay protection).'
+    LinkWalletRequest:
+      properties:
+        wallet_address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+          title: Wallet Address
+          description: The wallet that signed the message (0x-prefixed, 42 chars)
+        message:
+          anyOf:
+          - type: string
+            maxLength: 300
+            minLength: 60
+          - type: 'null'
+          title: Message
+          description: 'Exact human-readable message that was signed. Format: ''Execution Market: link wallet <wallet> to session at <ISO8601 UTC>''. Required unless dynamic_jwt is provided.'
+        signature:
+          anyOf:
+          - type: string
+            pattern: ^0x(?:[a-fA-F0-9]{2}){65,4096}$
+          - type: 'null'
+          title: Signature
+          description: Signature of the message by wallet_address. 65-byte EIP-191 EOA signatures are verified via ecrecover; any other length is treated as a smart-wallet signature and verified on-chain via ERC-1271 isValidSignature (ERC-6492 envelopes accepted for DEPLOYED wallets). Required unless dynamic_jwt is provided.
+        dynamic_jwt:
+          anyOf:
+          - type: string
+            maxLength: 10000
+            minLength: 20
+          - type: 'null'
+          title: Dynamic Jwt
+          description: Dynamic session JWT (alternative ownership proof for Dynamic EMBEDDED wallets only). When present, message/signature are not required.
+      additionalProperties: false
+      type: object
+      required:
+      - wallet_address
+      title: LinkWalletRequest
+      description: 'Request to link the caller''s wallet to their current Supabase session.
+
+
+        Binds ``executors.user_id`` to the JWT ``sub`` so worker-auth endpoints can
+
+        resolve the executor. The wallet must sign the exact ``message`` to prove
+
+        ownership (this is what authorizes the rebind under migration 111''s
+
+        "proven owner" rule). The message MUST follow the format
+
+        ``"Execution Market: link wallet <wallet> to Supabase user <sub> at <ISO8601 UTC>"``
+
+        and the timestamp must be within the last 10 minutes (replay protection).
+
+        The ``<sub>`` binds the signature to the caller''s session, so a captured
+
+        signature cannot be replayed under a different JWT to hijack the executor.
+
+
+        Alternative proof (Dynamic embedded wallets only, INC 2026-07-10): instead
+
+        of ``message`` + ``signature``, pass ``dynamic_jwt`` — the Dynamic session
+
+        JWT. The backend verifies it against Dynamic''s JWKS (RS256) and requires
+
+        the wallet to appear in ``verified_credentials`` with
+
+        ``wallet_provider == ''embeddedWallet''``. Dynamic custodies embedded-wallet
+
+        keys, so possession of the session IS ownership of the wallet; external
+
+        wallets must keep using the signature flow.'
+    SolanaPayoutAddressResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        solana_payout_address:
+          type: string
+          title: Solana Payout Address
+          description: Address now bound (base58, case preserved)
+        previous_solana_payout_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Previous Solana Payout Address
+          description: Address that was replaced (null when none was set)
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor
+        changed:
+          type: boolean
+          title: Changed
+          description: False when that address was already bound (no-op)
+      type: object
+      required:
+      - message
+      - solana_payout_address
+      - executor_id
+      - changed
+      title: SolanaPayoutAddressResponse
+      description: Response for a Solana payout address binding.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    UpdateWalletResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        wallet_address:
+          type: string
+          title: Wallet Address
+          description: Wallet address now set on the executor profile (lowercase)
+        previous_wallet_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Previous Wallet Address
+          description: Wallet that was replaced (null on a no-op change)
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor
+        changed:
+          type: boolean
+          title: Changed
+          description: False when the wallet was already set to that address (no-op)
+      type: object
+      required:
+      - message
+      - wallet_address
+      - executor_id
+      - changed
+      title: UpdateWalletResponse
+      description: Response for a wallet address change.
+    Dx402KeyRequest:
+      properties:
+        public_key:
+          type: string
+          title: Public Key
+          description: 'Your DX402 PUBLIC key: SEC1-compressed secp256k1 (`0x02`/`0x03` + 64 hex) or X25519 (`0x` + 64 hex). This is public material -- never send a private key. It SHOULD NOT be your payment key: this one only ever decrypts, so a leak costs you readable evidence instead of your funds, and it is what lets a buyer on a custodial wallet open their own evidence at all (a custodian signs but does not do ECDH).'
+          examples:
+          - '0x02abababababababababababababababababababababababababababababababab'
+        key_alg:
+          type: string
+          title: Key Alg
+          description: '`ECIES-secp256k1` (33-byte key) or `ECIES-X25519` (32-byte).'
+          default: ECIES-secp256k1
+      type: object
+      required:
+      - public_key
+      title: Dx402KeyRequest
+      description: Declare the PUBLIC key your durable evidence should be sealed to.
+  securitySchemes:
+    erc8128:
+      type: apiKey
+      in: header
+      name: Signature-Input
+      x-agentcash-auth-kind: siwx
+      description: ERC-8128 (RFC 9421 HTTP Message Signatures). Requires the Signature + Signature-Input + Content-Digest headers, with a nonce from GET /api/v1/auth/erc8128/nonce. See https://execution.market/skill.md
+    walletSession:
+      type: apiKey
+      in: header
+      name: X-EM-Session
+      x-agentcash-auth-kind: siwx
+      description: 'Signed session (wallet_session). A SessionGrant this server builds at POST /api/v1/auth/session/challenge, signed by the wallet and replayed verbatim. For clients that cannot hash a request body and have no clock. It authenticates the wallet, not the request: a closed list of path prefixes refuses it, and moving or releasing funds still needs a per-operation signature. GET /api/v1/auth/info lists both. Disabled unless EM_WALLET_SESSION_ENABLED is on.'
+    oauthBearer:
+      type: oauth2
+      description: 'OAuth 2.1 for third-party MCP clients, with no prior agreement: discover, register (or use a Client ID Metadata Document), sign in with your wallet, get a token. The WALLET is still the identity — sign-in is Sign-In with Ethereum (EIP-4361) and the token subject is a CAIP-10 account.
+
+
+        Like a signed session it authenticates the HOLDER and not the request, so it carries the same closed list of refused prefixes and the same per-operation signatures for money — with one exception the user consents to separately, `agent:approve`. Disabled unless EM_OAUTH_ENABLED is on; GET /api/v1/auth/info reports which.'
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.execution.market/oauth/authorize
+          tokenUrl: https://auth.execution.market/oauth/token
+          refreshUrl: https://auth.execution.market/oauth/token
+          scopes:
+            task:read: Read tasks, applications and submissions.
+            task:write: Edit a task you published, and assign a worker to it.
+            task:cancel: Cancel a task you published.
+            worker:apply: Apply to tasks as a worker on your behalf.
+            worker:submit: Submit completed work on your behalf. Refused for bearer tokens in v1.
+            worker:withdraw: Withdraw your earnings. Refused for bearer tokens.
+            agent:publish: Publish tasks and service listings as you.
+            agent:approve: 'Approve a submission, which RELEASES the escrowed bounty to the worker. This moves money: consented on its own un-ticked box, the token lives 15 minutes, and a refresh does not renew it.'
+            reputation:rate: 'Rate a counterparty. Refused for bearer tokens: a rating is an act of its author.'
+      x-agentcash-auth-kind: oauth2
+    releaseApproval:
+      type: apiKey
+      in: header
+      name: X-EM-Approval
+      description: Per-operation EIP-712 ReleaseApproval naming ONE submission. Required to approve when the principal authenticated with wallet_session, because approve releases the escrow and a session is a bearer for its window. Build it at GET /api/v1/submissions/{submission_id}/approve/challenge.
+    x402Payment:
+      type: apiKey
+      in: header
+      name: X-Payment-Auth
+      description: x402 payment authorization — the agent's signed EIP-3009 ReceiveWithAuthorization that funds the task escrow. Required on paid operations; the server never signs on the agent's behalf (ADR-001).
+externalDocs:
+  description: Full Documentation
+  url: https://docs.execution.market
+x-refined-from:
+- execution-market-openapi.json
+- execution-market-openapi.yml
