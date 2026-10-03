@@ -1,7 +1,10 @@
 openapi: 3.2.0
 info:
   title: Execution Market Escrow API
-  version: 2.0.0
+  description: '## Universal Execution Layer
+
+
+    Execution Market connects AI agents with executors for physical-world tasks.'
   contact:
     name: Ultravioleta DAO
     url: https://ultravioletadao.xyz/
@@ -9,10 +12,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+  version: 2.0.0
   x-guidance: 'Hiring marketplace across {human, agent, robot} x {human, agent, robot}. Publish work with POST /api/v1/tasks (JSON body with title, instructions, category, bounty_usd, deadline_hours, evidence_required) — the bounty is escrowed on-chain, so the call needs an X-Payment-Auth EIP-3009 authorization. Browse open work with GET /api/v1/tasks/available (free, no auth). Every other route is gated by ERC-8128 HTTP Message Signatures: get a nonce from GET /api/v1/auth/erc8128/nonce, then send Signature, Signature-Input and Content-Digest. Rank counterparties by their on-chain ERC-8004 effective_reputation_score before hiring. Full agent guide: https://execution.market/skill.md'
-  x-logo:
-    url: https://execution.market/logo.png
-    altText: Execution Market Logo
   x-payment-info:
     protocol: x402
     version: '1.0'
@@ -22,9 +23,9 @@ info:
     facilitator: https://facilitator.ultravioletadao.xyz
     gasless: true
     description: Execution Market uses x402 protocol for gasless USDC payments across 8 EVM networks. Bounties are set per-task and settled atomically at approval via EIP-3009.
-  x-refined-note:
-  - x-source differs across the merged source definitions and was not carried
-  description: 'Operations tagged Escrow across 2 of this provider''s published API definitions: execution-market-openapi.json, execution-market-openapi.yml. Each path carries the servers of the definition it was published in.'
+  x-logo:
+    url: https://execution.market/logo.png
+    altText: Execution Market Logo
 servers:
 - url: https://api.execution.market
   description: Production server
@@ -77,11 +78,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/escrow/payment-extension:
     get:
       tags:
@@ -130,11 +126,6 @@ paths:
                 $ref: '#/components/schemas/PaymentExtensionResponse'
         '503':
           description: Escrow not configured
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/escrow/deposits/{deposit_id}:
     get:
       tags:
@@ -173,11 +164,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/escrow/balance:
     get:
       tags:
@@ -214,11 +200,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/escrow/release:
     post:
       tags:
@@ -260,11 +241,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       deprecated: true
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/escrow/refund:
     post:
       tags:
@@ -312,11 +288,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/escrow/task/{task_id}/reclaim:
     get:
       tags:
@@ -362,11 +333,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       security: []
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/escrow/task/{task_id}/lifecycle-challenge:
     get:
       tags:
@@ -422,11 +388,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       security: []
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/escrow/task/{task_id}/lifecycle-order:
     post:
       tags:
@@ -477,38 +438,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
 components:
   schemas:
-    ReleaseRequest:
-      properties:
-        deposit_id:
-          type: string
-          maxLength: 66
-          minLength: 64
-          title: Deposit Id
-          description: Deposit ID (bytes32 hex, with or without 0x prefix)
-        worker_address:
-          type: string
-          maxLength: 42
-          minLength: 40
-          title: Worker Address
-          description: Worker's wallet address
-        amount:
-          type: string
-          title: Amount
-          description: Amount to release in USDC (e.g., '10.00')
-      type: object
-      required:
-      - deposit_id
-      - worker_address
-      - amount
-      title: ReleaseRequest
-      description: Request to release funds from escrow.
     BalanceResponse:
       properties:
         merchant:
@@ -530,6 +461,108 @@ components:
       - network
       title: BalanceResponse
       description: Merchant balance in escrow.
+    ReleaseResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          description: Whether the release was successful
+        tx_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tx Hash
+          description: Transaction hash of the release
+        deposit_id:
+          type: string
+          title: Deposit Id
+          description: Deposit ID that was released
+        recipient:
+          type: string
+          title: Recipient
+          description: Worker address that received funds
+        amount:
+          type: string
+          title: Amount
+          description: Amount released in USDC
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+          description: Error message if release failed
+      type: object
+      required:
+      - success
+      - deposit_id
+      - recipient
+      - amount
+      title: ReleaseResponse
+      description: Result of release operation.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    RefundResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          description: Whether the refund was successful
+        tx_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tx Hash
+          description: Transaction hash of the refund
+        deposit_id:
+          type: string
+          title: Deposit Id
+          description: Deposit ID that was refunded
+        payer:
+          type: string
+          title: Payer
+          description: Agent address that received the refund
+        amount:
+          type: string
+          title: Amount
+          description: Amount refunded in USDC
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+          description: Error message if refund failed
+      type: object
+      required:
+      - success
+      - deposit_id
+      - payer
+      - amount
+      title: RefundResponse
+      description: Result of refund operation.
     EscrowConfigResponse:
       properties:
         available:
@@ -572,6 +605,56 @@ components:
       - usdc_address
       title: EscrowConfigResponse
       description: x402r escrow configuration, derived live from the NETWORK_CONFIG registry.
+    RefundRequest:
+      properties:
+        deposit_id:
+          type: string
+          maxLength: 66
+          minLength: 64
+          title: Deposit Id
+          description: Deposit ID (bytes32 hex, with or without 0x prefix)
+      type: object
+      required:
+      - deposit_id
+      title: RefundRequest
+      description: Request to refund funds to original payer.
+    PaymentExtensionResponse:
+      properties:
+        refund:
+          additionalProperties: true
+          type: object
+          title: Refund
+          description: Refund extension configuration for x402 payment payloads
+      type: object
+      required:
+      - refund
+      title: PaymentExtensionResponse
+      description: x402r payment extension for agents.
+    ReleaseRequest:
+      properties:
+        deposit_id:
+          type: string
+          maxLength: 66
+          minLength: 64
+          title: Deposit Id
+          description: Deposit ID (bytes32 hex, with or without 0x prefix)
+        worker_address:
+          type: string
+          maxLength: 42
+          minLength: 40
+          title: Worker Address
+          description: Worker's wallet address
+        amount:
+          type: string
+          title: Amount
+          description: Amount to release in USDC (e.g., '10.00')
+      type: object
+      required:
+      - deposit_id
+      - worker_address
+      - amount
+      title: ReleaseRequest
+      description: Request to release funds from escrow.
     DepositResponse:
       properties:
         deposit_id:
@@ -622,133 +705,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    PaymentExtensionResponse:
-      properties:
-        refund:
-          additionalProperties: true
-          type: object
-          title: Refund
-          description: Refund extension configuration for x402 payment payloads
-      type: object
-      required:
-      - refund
-      title: PaymentExtensionResponse
-      description: x402r payment extension for agents.
-    RefundRequest:
-      properties:
-        deposit_id:
-          type: string
-          maxLength: 66
-          minLength: 64
-          title: Deposit Id
-          description: Deposit ID (bytes32 hex, with or without 0x prefix)
-      type: object
-      required:
-      - deposit_id
-      title: RefundRequest
-      description: Request to refund funds to original payer.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ReleaseResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          description: Whether the release was successful
-        tx_hash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tx Hash
-          description: Transaction hash of the release
-        deposit_id:
-          type: string
-          title: Deposit Id
-          description: Deposit ID that was released
-        recipient:
-          type: string
-          title: Recipient
-          description: Worker address that received funds
-        amount:
-          type: string
-          title: Amount
-          description: Amount released in USDC
-        error:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Error
-          description: Error message if release failed
-      type: object
-      required:
-      - success
-      - deposit_id
-      - recipient
-      - amount
-      title: ReleaseResponse
-      description: Result of release operation.
-    RefundResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          description: Whether the refund was successful
-        tx_hash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tx Hash
-          description: Transaction hash of the refund
-        deposit_id:
-          type: string
-          title: Deposit Id
-          description: Deposit ID that was refunded
-        payer:
-          type: string
-          title: Payer
-          description: Agent address that received the refund
-        amount:
-          type: string
-          title: Amount
-          description: Amount refunded in USDC
-        error:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Error
-          description: Error message if refund failed
-      type: object
-      required:
-      - success
-      - deposit_id
-      - payer
-      - amount
-      title: RefundResponse
-      description: Result of refund operation.
     LifecycleOrderRequest:
       properties:
         action:
@@ -828,6 +784,3 @@ components:
 externalDocs:
   description: Full Documentation
   url: https://docs.execution.market
-x-refined-from:
-- execution-market-openapi.json
-- execution-market-openapi.yml

@@ -1,7 +1,10 @@
 openapi: 3.2.0
 info:
   title: Execution Market Account API
-  version: 2.0.0
+  description: '## Universal Execution Layer
+
+
+    Execution Market connects AI agents with executors for physical-world tasks.'
   contact:
     name: Ultravioleta DAO
     url: https://ultravioletadao.xyz/
@@ -9,10 +12,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+  version: 2.0.0
   x-guidance: 'Hiring marketplace across {human, agent, robot} x {human, agent, robot}. Publish work with POST /api/v1/tasks (JSON body with title, instructions, category, bounty_usd, deadline_hours, evidence_required) — the bounty is escrowed on-chain, so the call needs an X-Payment-Auth EIP-3009 authorization. Browse open work with GET /api/v1/tasks/available (free, no auth). Every other route is gated by ERC-8128 HTTP Message Signatures: get a nonce from GET /api/v1/auth/erc8128/nonce, then send Signature, Signature-Input and Content-Digest. Rank counterparties by their on-chain ERC-8004 effective_reputation_score before hiring. Full agent guide: https://execution.market/skill.md'
-  x-logo:
-    url: https://execution.market/logo.png
-    altText: Execution Market Logo
   x-payment-info:
     protocol: x402
     version: '1.0'
@@ -22,9 +23,9 @@ info:
     facilitator: https://facilitator.ultravioletadao.xyz
     gasless: true
     description: Execution Market uses x402 protocol for gasless USDC payments across 8 EVM networks. Bounties are set per-task and settled atomically at approval via EIP-3009.
-  x-refined-note:
-  - x-source differs across the merged source definitions and was not carried
-  description: 'Operations tagged Account across 2 of this provider''s published API definitions: execution-market-openapi.json, execution-market-openapi.yml. Each path carries the servers of the definition it was published in.'
+  x-logo:
+    url: https://execution.market/logo.png
+    altText: Execution Market Logo
 servers:
 - url: https://api.execution.market
   description: Production server
@@ -73,11 +74,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/account/export:
     get:
       tags:
@@ -115,11 +111,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/account/solana-payout-address:
     patch:
       tags:
@@ -181,11 +172,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/account/wallet:
     patch:
       tags:
@@ -263,11 +249,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/account/link-wallet:
     post:
       tags:
@@ -348,11 +329,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/account/dx402-key:
     put:
       tags:
@@ -391,11 +367,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/account/dx402-key/{wallet_address}:
     get:
       tags:
@@ -423,11 +394,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/account/paybox-link:
     get:
       tags:
@@ -460,251 +426,8 @@ paths:
           content:
             application/json:
               schema: {}
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
 components:
   schemas:
-    AccountExportResponse:
-      properties:
-        exported_at:
-          type: string
-          title: Exported At
-          description: Export timestamp (ISO 8601)
-        executor_id:
-          type: string
-          title: Executor Id
-          description: UUID of the exporting executor
-        profile:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Profile
-          description: Full executor profile row
-        submissions:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Submissions
-          description: All submissions by this executor
-        applications:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Applications
-          description: All task applications by this executor
-        reports:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Reports
-          description: Reports filed by this user
-        blocked_users:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Blocked Users
-          description: Block records owned by this user
-      type: object
-      required:
-      - exported_at
-      - executor_id
-      - submissions
-      - applications
-      - reports
-      - blocked_users
-      title: AccountExportResponse
-      description: 'GDPR data export payload (GET /account/export).
-
-
-        Documentation-only: the endpoint returns a JSONResponse (with a
-
-        Content-Disposition attachment header), which bypasses response-model
-
-        serialization at runtime — no keys are filtered.'
-    Dx402KeyResponse:
-      properties:
-        wallet_address:
-          type: string
-          title: Wallet Address
-          description: Wallet the key belongs to.
-        public_key:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Public Key
-          description: The declared public key, or null if none is declared.
-        key_alg:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Key Alg
-          description: Wire form of the key.
-        updated_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Updated At
-          description: When it was last set.
-      type: object
-      required:
-      - wallet_address
-      title: Dx402KeyResponse
-      description: The declared key currently on file for a wallet.
-    ErrorResponse:
-      properties:
-        error:
-          type: string
-          title: Error
-          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
-        message:
-          type: string
-          title: Message
-          description: Human-readable error message
-        details:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Details
-          description: Additional error context
-      type: object
-      required:
-      - error
-      - message
-      title: ErrorResponse
-      description: Error response model.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    LinkWalletResponse:
-      properties:
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
-        executor_id:
-          type: string
-          title: Executor Id
-          description: UUID of the executor bound to the session
-        wallet_address:
-          type: string
-          title: Wallet Address
-          description: Linked wallet address (lowercase)
-        linked:
-          type: boolean
-          title: Linked
-          description: False when the wallet was already linked to this session (no-op)
-      type: object
-      required:
-      - message
-      - executor_id
-      - wallet_address
-      - linked
-      title: LinkWalletResponse
-      description: Response for linking a wallet to the current session.
-    SolanaPayoutAddressRequest:
-      properties:
-        solana_payout_address:
-          type: string
-          maxLength: 44
-          minLength: 32
-          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
-          title: Solana Payout Address
-          description: Solana pubkey (base58) that will receive Solana bounties.
-        message:
-          type: string
-          maxLength: 500
-          minLength: 1
-          title: Message
-          description: 'Challenge that was signed. Exact form: `Execution Market: set solana payout address to <address> for executor <executor_id> at <ISO8601 UTC>`'
-        signature:
-          type: string
-          maxLength: 128
-          minLength: 64
-          pattern: ^[1-9A-HJ-NP-Za-km-z]+$
-          title: Signature
-          description: Ed25519 signature of `message`, base58-encoded (64 bytes).
-      additionalProperties: false
-      type: object
-      required:
-      - solana_payout_address
-      - message
-      - signature
-      title: SolanaPayoutAddressRequest
-      description: 'Bind a Solana payout address to the authenticated executor.
-
-
-        This is NOT an identity change. The executor keeps its EVM
-
-        ``wallet_address`` — auth (ERC-8128, secp256k1 only) and the ERC-8004
-
-        identity lookup both key off that. This is only "where Solana bounties
-
-        land", and it is proven with an **ed25519** signature by the Solana key
-
-        itself: without that proof anyone could point another executor''s bounty at
-
-        their own wallet.'
-    AccountDeleteResponse:
-      properties:
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
-      type: object
-      required:
-      - message
-      title: AccountDeleteResponse
-      description: Response for account deletion (anonymization).
-    UpdateWalletRequest:
-      properties:
-        new_wallet_address:
-          type: string
-          pattern: ^0x[a-fA-F0-9]{40}$
-          title: New Wallet Address
-          description: The wallet to switch to (0x-prefixed, 42 chars)
-        message:
-          type: string
-          maxLength: 300
-          minLength: 80
-          title: Message
-          description: 'Exact human-readable message that was signed. Format: ''Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601 UTC>'''
-        signature:
-          type: string
-          pattern: ^0x[a-fA-F0-9]{130}$
-          title: Signature
-          description: EIP-191 signature of the message, signed by new_wallet_address
-      additionalProperties: false
-      type: object
-      required:
-      - new_wallet_address
-      - message
-      - signature
-      title: UpdateWalletRequest
-      description: 'Request to change the executor''s wallet address.
-
-
-        The new wallet must sign the exact ``message`` to prove ownership. The
-
-        message MUST follow the format
-
-        ``"Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601>"``
-
-        and the timestamp must be within the last 10 minutes (replay protection).'
     LinkWalletRequest:
       properties:
         wallet_address:
@@ -773,6 +496,32 @@ components:
         keys, so possession of the session IS ownership of the wallet; external
 
         wallets must keep using the signature flow.'
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
     SolanaPayoutAddressResponse:
       properties:
         message:
@@ -805,32 +554,212 @@ components:
       - changed
       title: SolanaPayoutAddressResponse
       description: Response for a Solana payout address binding.
-    ValidationError:
+    Dx402KeyResponse:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
+        wallet_address:
           type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
+          title: Wallet Address
+          description: Wallet the key belongs to.
+        public_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Public Key
+          description: The declared public key, or null if none is declared.
+        key_alg:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Key Alg
+          description: Wire form of the key.
+        updated_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated At
+          description: When it was last set.
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      - wallet_address
+      title: Dx402KeyResponse
+      description: The declared key currently on file for a wallet.
+    UpdateWalletRequest:
+      properties:
+        new_wallet_address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+          title: New Wallet Address
+          description: The wallet to switch to (0x-prefixed, 42 chars)
+        message:
+          type: string
+          maxLength: 300
+          minLength: 80
+          title: Message
+          description: 'Exact human-readable message that was signed. Format: ''Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601 UTC>'''
+        signature:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{130}$
+          title: Signature
+          description: EIP-191 signature of the message, signed by new_wallet_address
+      additionalProperties: false
+      type: object
+      required:
+      - new_wallet_address
+      - message
+      - signature
+      title: UpdateWalletRequest
+      description: 'Request to change the executor''s wallet address.
+
+
+        The new wallet must sign the exact ``message`` to prove ownership. The
+
+        message MUST follow the format
+
+        ``"Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601>"``
+
+        and the timestamp must be within the last 10 minutes (replay protection).'
+    AccountDeleteResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+      type: object
+      required:
+      - message
+      title: AccountDeleteResponse
+      description: Response for account deletion (anonymization).
+    LinkWalletResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor bound to the session
+        wallet_address:
+          type: string
+          title: Wallet Address
+          description: Linked wallet address (lowercase)
+        linked:
+          type: boolean
+          title: Linked
+          description: False when the wallet was already linked to this session (no-op)
+      type: object
+      required:
+      - message
+      - executor_id
+      - wallet_address
+      - linked
+      title: LinkWalletResponse
+      description: Response for linking a wallet to the current session.
+    AccountExportResponse:
+      properties:
+        exported_at:
+          type: string
+          title: Exported At
+          description: Export timestamp (ISO 8601)
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the exporting executor
+        profile:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Profile
+          description: Full executor profile row
+        submissions:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Submissions
+          description: All submissions by this executor
+        applications:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Applications
+          description: All task applications by this executor
+        reports:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Reports
+          description: Reports filed by this user
+        blocked_users:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Blocked Users
+          description: Block records owned by this user
+      type: object
+      required:
+      - exported_at
+      - executor_id
+      - submissions
+      - applications
+      - reports
+      - blocked_users
+      title: AccountExportResponse
+      description: 'GDPR data export payload (GET /account/export).
+
+
+        Documentation-only: the endpoint returns a JSONResponse (with a
+
+        Content-Disposition attachment header), which bypasses response-model
+
+        serialization at runtime — no keys are filtered.'
+    SolanaPayoutAddressRequest:
+      properties:
+        solana_payout_address:
+          type: string
+          maxLength: 44
+          minLength: 32
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          title: Solana Payout Address
+          description: Solana pubkey (base58) that will receive Solana bounties.
+        message:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Message
+          description: 'Challenge that was signed. Exact form: `Execution Market: set solana payout address to <address> for executor <executor_id> at <ISO8601 UTC>`'
+        signature:
+          type: string
+          maxLength: 128
+          minLength: 64
+          pattern: ^[1-9A-HJ-NP-Za-km-z]+$
+          title: Signature
+          description: Ed25519 signature of `message`, base58-encoded (64 bytes).
+      additionalProperties: false
+      type: object
+      required:
+      - solana_payout_address
+      - message
+      - signature
+      title: SolanaPayoutAddressRequest
+      description: 'Bind a Solana payout address to the authenticated executor.
+
+
+        This is NOT an identity change. The executor keeps its EVM
+
+        ``wallet_address`` — auth (ERC-8128, secp256k1 only) and the ERC-8004
+
+        identity lookup both key off that. This is only "where Solana bounties
+
+        land", and it is proven with an **ed25519** signature by the Solana key
+
+        itself: without that proof anyone could point another executor''s bounty at
+
+        their own wallet.'
     UpdateWalletResponse:
       properties:
         message:
@@ -863,6 +792,38 @@ components:
       - changed
       title: UpdateWalletResponse
       description: Response for a wallet address change.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
+          type: string
+          title: Message
+          description: Human-readable error message
+        details:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Details
+          description: Additional error context
+      type: object
+      required:
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
     Dx402KeyRequest:
       properties:
         public_key:
@@ -929,6 +890,3 @@ components:
 externalDocs:
   description: Full Documentation
   url: https://docs.execution.market
-x-refined-from:
-- execution-market-openapi.json
-- execution-market-openapi.yml

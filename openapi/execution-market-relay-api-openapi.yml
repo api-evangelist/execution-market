@@ -1,7 +1,10 @@
 openapi: 3.2.0
 info:
   title: Execution Market Relay API
-  version: 2.0.0
+  description: '## Universal Execution Layer
+
+
+    Execution Market connects AI agents with executors for physical-world tasks.'
   contact:
     name: Ultravioleta DAO
     url: https://ultravioletadao.xyz/
@@ -9,10 +12,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+  version: 2.0.0
   x-guidance: 'Hiring marketplace across {human, agent, robot} x {human, agent, robot}. Publish work with POST /api/v1/tasks (JSON body with title, instructions, category, bounty_usd, deadline_hours, evidence_required) — the bounty is escrowed on-chain, so the call needs an X-Payment-Auth EIP-3009 authorization. Browse open work with GET /api/v1/tasks/available (free, no auth). Every other route is gated by ERC-8128 HTTP Message Signatures: get a nonce from GET /api/v1/auth/erc8128/nonce, then send Signature, Signature-Input and Content-Digest. Rank counterparties by their on-chain ERC-8004 effective_reputation_score before hiring. Full agent guide: https://execution.market/skill.md'
-  x-logo:
-    url: https://execution.market/logo.png
-    altText: Execution Market Logo
   x-payment-info:
     protocol: x402
     version: '1.0'
@@ -22,9 +23,9 @@ info:
     facilitator: https://facilitator.ultravioletadao.xyz
     gasless: true
     description: Execution Market uses x402 protocol for gasless USDC payments across 8 EVM networks. Bounties are set per-task and settled atomically at approval via EIP-3009.
-  x-refined-note:
-  - x-source differs across the merged source definitions and was not carried
-  description: 'Operations tagged relay across 2 of this provider''s published API definitions: execution-market-openapi.json, execution-market-openapi.yml. Each path carries the servers of the definition it was published in.'
+  x-logo:
+    url: https://execution.market/logo.png
+    altText: Execution Market Logo
 servers:
 - url: https://api.execution.market
   description: Production server
@@ -61,11 +62,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/relay-chains/{chain_id}:
     get:
       tags:
@@ -96,11 +92,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/relay-chains/{chain_id}/legs/{leg_number}/assign:
     post:
       tags:
@@ -142,11 +133,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/relay-chains/{chain_id}/legs/{leg_number}/handoff:
     post:
       tags:
@@ -188,157 +174,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
 components:
   schemas:
-    CreateRelayChainRequest:
-      properties:
-        task_id:
-          type: string
-          title: Task Id
-          description: Parent task ID
-        legs:
-          items:
-            $ref: '#/components/schemas/LegInput'
-          type: array
-          minItems: 2
-          title: Legs
-          description: At least 2 legs
-      additionalProperties: false
-      type: object
-      required:
-      - task_id
-      - legs
-      title: CreateRelayChainRequest
-    HandoffRequest:
-      properties:
-        handoff_code:
-          type: string
-          maxLength: 8
-          minLength: 4
-          title: Handoff Code
-        evidence:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Evidence
-      additionalProperties: false
-      type: object
-      required:
-      - handoff_code
-      title: HandoffRequest
-    AssignLegRequest:
-      properties:
-        worker_wallet:
-          type: string
-          maxLength: 42
-          minLength: 42
-          title: Worker Wallet
-        worker_nick:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Worker Nick
-      additionalProperties: false
-      type: object
-      required:
-      - worker_wallet
-      title: AssignLegRequest
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    RelayChainResponse:
-      properties:
-        chain_id:
-          type: string
-          title: Chain Id
-        parent_task_id:
-          type: string
-          title: Parent Task Id
-        status:
-          type: string
-          title: Status
-        total_legs:
-          type: integer
-          title: Total Legs
-        completed_legs:
-          type: integer
-          title: Completed Legs
-        legs:
-          items:
-            $ref: '#/components/schemas/LegResponse'
-          type: array
-          title: Legs
-          default: []
-      type: object
-      required:
-      - chain_id
-      - parent_task_id
-      - status
-      - total_legs
-      - completed_legs
-      title: RelayChainResponse
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    LegInput:
-      properties:
-        pickup_location:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Pickup Location
-        dropoff_location:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Dropoff Location
-        bounty_usdc:
-          type: number
-          exclusiveMinimum: 0.0
-          title: Bounty Usdc
-          description: Bounty for this leg in USDC
-      additionalProperties: false
-      type: object
-      required:
-      - bounty_usdc
-      title: LegInput
     LegResponse:
       properties:
         leg_id:
@@ -397,6 +234,150 @@ components:
       - status
       - bounty_usdc
       title: LegResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    AssignLegRequest:
+      properties:
+        worker_wallet:
+          type: string
+          maxLength: 42
+          minLength: 42
+          title: Worker Wallet
+        worker_nick:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Worker Nick
+      additionalProperties: false
+      type: object
+      required:
+      - worker_wallet
+      title: AssignLegRequest
+    LegInput:
+      properties:
+        pickup_location:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Pickup Location
+        dropoff_location:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Dropoff Location
+        bounty_usdc:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Bounty Usdc
+          description: Bounty for this leg in USDC
+      additionalProperties: false
+      type: object
+      required:
+      - bounty_usdc
+      title: LegInput
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    CreateRelayChainRequest:
+      properties:
+        task_id:
+          type: string
+          title: Task Id
+          description: Parent task ID
+        legs:
+          items:
+            $ref: '#/components/schemas/LegInput'
+          type: array
+          minItems: 2
+          title: Legs
+          description: At least 2 legs
+      additionalProperties: false
+      type: object
+      required:
+      - task_id
+      - legs
+      title: CreateRelayChainRequest
+    HandoffRequest:
+      properties:
+        handoff_code:
+          type: string
+          maxLength: 8
+          minLength: 4
+          title: Handoff Code
+        evidence:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Evidence
+      additionalProperties: false
+      type: object
+      required:
+      - handoff_code
+      title: HandoffRequest
+    RelayChainResponse:
+      properties:
+        chain_id:
+          type: string
+          title: Chain Id
+        parent_task_id:
+          type: string
+          title: Parent Task Id
+        status:
+          type: string
+          title: Status
+        total_legs:
+          type: integer
+          title: Total Legs
+        completed_legs:
+          type: integer
+          title: Completed Legs
+        legs:
+          items:
+            $ref: '#/components/schemas/LegResponse'
+          type: array
+          title: Legs
+          default: []
+      type: object
+      required:
+      - chain_id
+      - parent_task_id
+      - status
+      - total_legs
+      - completed_legs
+      title: RelayChainResponse
   securitySchemes:
     erc8128:
       type: apiKey
@@ -445,6 +426,3 @@ components:
 externalDocs:
   description: Full Documentation
   url: https://docs.execution.market
-x-refined-from:
-- execution-market-openapi.json
-- execution-market-openapi.yml

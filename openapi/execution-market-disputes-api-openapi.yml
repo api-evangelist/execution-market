@@ -1,7 +1,10 @@
 openapi: 3.2.0
 info:
   title: Execution Market Disputes API
-  version: 2.0.0
+  description: '## Universal Execution Layer
+
+
+    Execution Market connects AI agents with executors for physical-world tasks.'
   contact:
     name: Ultravioleta DAO
     url: https://ultravioletadao.xyz/
@@ -9,10 +12,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+  version: 2.0.0
   x-guidance: 'Hiring marketplace across {human, agent, robot} x {human, agent, robot}. Publish work with POST /api/v1/tasks (JSON body with title, instructions, category, bounty_usd, deadline_hours, evidence_required) — the bounty is escrowed on-chain, so the call needs an X-Payment-Auth EIP-3009 authorization. Browse open work with GET /api/v1/tasks/available (free, no auth). Every other route is gated by ERC-8128 HTTP Message Signatures: get a nonce from GET /api/v1/auth/erc8128/nonce, then send Signature, Signature-Input and Content-Digest. Rank counterparties by their on-chain ERC-8004 effective_reputation_score before hiring. Full agent guide: https://execution.market/skill.md'
-  x-logo:
-    url: https://execution.market/logo.png
-    altText: Execution Market Logo
   x-payment-info:
     protocol: x402
     version: '1.0'
@@ -22,9 +23,9 @@ info:
     facilitator: https://facilitator.ultravioletadao.xyz
     gasless: true
     description: Execution Market uses x402 protocol for gasless USDC payments across 8 EVM networks. Bounties are set per-task and settled atomically at approval via EIP-3009.
-  x-refined-note:
-  - x-source differs across the merged source definitions and was not carried
-  description: 'Operations tagged Disputes across 2 of this provider''s published API definitions: execution-market-openapi.json, execution-market-openapi.yml. Each path carries the servers of the definition it was published in.'
+  x-logo:
+    url: https://execution.market/logo.png
+    altText: Execution Market Logo
 servers:
 - url: https://api.execution.market
   description: Production server
@@ -179,11 +180,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/disputes/available:
     get:
       tags:
@@ -235,11 +231,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       security: []
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/disputes/{dispute_id}:
     get:
       tags:
@@ -272,11 +263,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       security: []
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/disputes/{dispute_id}/resolve:
     post:
       tags:
@@ -347,13 +333,212 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
 components:
   schemas:
+    CreateDisputeRequest:
+      properties:
+        submission_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+          title: Submission Id
+          description: UUID of the submission being disputed
+        reason:
+          type: string
+          pattern: ^(incomplete_work|poor_quality|wrong_deliverable|late_delivery|fake_evidence|no_response|payment_issue|unfair_rejection|other)$
+          title: Reason
+          description: dispute_reason enum value (migration 004)
+        description:
+          type: string
+          maxLength: 2000
+          minLength: 5
+          title: Description
+      additionalProperties: false
+      type: object
+      required:
+      - submission_id
+      - reason
+      - description
+      title: CreateDisputeRequest
+      description: 'Publisher-initiated dispute creation (INC-2026-04-22 Phase 3).
+
+
+        Replaces the silent Ring 2 auto-escalation path that was removed in
+
+        Phase 1. Publishers explicitly dispute a submission they believe is
+
+        fraudulent or non-compliant, instead of Ring 2 making that decision
+
+        for them.
+
+
+        The new dispute is recorded with escalation_tier=1 (human-initiated,
+
+        distinct from the deprecated escalation_tier=2 used by the pre-fix
+
+        arbiter) and the linked submission''s agent_verdict is set to
+
+        ''disputed'' -- this time it''s an explicit publisher decision, not a
+
+        usurpation by the automated ring.'
+    DisputeSummary:
+      properties:
+        id:
+          type: string
+          title: Id
+        task_id:
+          type: string
+          title: Task Id
+        submission_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Submission Id
+        agent_id:
+          type: string
+          title: Agent Id
+        executor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Executor Id
+        reason:
+          type: string
+          title: Reason
+        description:
+          type: string
+          title: Description
+        status:
+          type: string
+          title: Status
+        priority:
+          type: integer
+          title: Priority
+        escalation_tier:
+          type: integer
+          title: Escalation Tier
+        disputed_amount_usdc:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Disputed Amount Usdc
+        created_at:
+          type: string
+          title: Created At
+        response_deadline:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Response Deadline
+        resolved_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolved At
+        winner:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Winner
+      type: object
+      required:
+      - id
+      - task_id
+      - agent_id
+      - reason
+      - description
+      - status
+      - priority
+      - escalation_tier
+      - created_at
+      title: DisputeSummary
+      description: Lightweight dispute row for list endpoints.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ResolveDisputeRequest:
+      properties:
+        verdict:
+          type: string
+          pattern: ^(release|refund|split)$
+          title: Verdict
+        reason:
+          type: string
+          maxLength: 2000
+          minLength: 5
+          title: Reason
+        split_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Split Pct
+          description: Agent refund % (required when verdict='split')
+      additionalProperties: false
+      type: object
+      required:
+      - verdict
+      - reason
+      title: ResolveDisputeRequest
+      description: "Human arbiter's verdict on an INCONCLUSIVE dispute.\n\nVerdict options:\n  - 'release':   worker wins, full bounty released\n  - 'refund':    agent wins, full bounty refunded\n  - 'split':     partial release + partial refund\n                 (provide split_pct = agent's refund %, 0-100)"
+    ResolveDisputeResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+        dispute_id:
+          type: string
+          title: Dispute Id
+        verdict:
+          type: string
+          title: Verdict
+        agent_refund_usdc:
+          type: number
+          title: Agent Refund Usdc
+        executor_payout_usdc:
+          type: number
+          title: Executor Payout Usdc
+        resolved_at:
+          type: string
+          title: Resolved At
+        action_triggered:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Action Triggered
+      type: object
+      required:
+      - success
+      - dispute_id
+      - verdict
+      - agent_refund_usdc
+      - executor_payout_usdc
+      - resolved_at
+      title: ResolveDisputeResponse
     HTTPValidationError:
       properties:
         detail:
@@ -494,210 +679,6 @@ components:
       - items
       - total
       title: DisputeListResponse
-    ResolveDisputeResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-        dispute_id:
-          type: string
-          title: Dispute Id
-        verdict:
-          type: string
-          title: Verdict
-        agent_refund_usdc:
-          type: number
-          title: Agent Refund Usdc
-        executor_payout_usdc:
-          type: number
-          title: Executor Payout Usdc
-        resolved_at:
-          type: string
-          title: Resolved At
-        action_triggered:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Action Triggered
-      type: object
-      required:
-      - success
-      - dispute_id
-      - verdict
-      - agent_refund_usdc
-      - executor_payout_usdc
-      - resolved_at
-      title: ResolveDisputeResponse
-    CreateDisputeRequest:
-      properties:
-        submission_id:
-          type: string
-          maxLength: 36
-          minLength: 36
-          title: Submission Id
-          description: UUID of the submission being disputed
-        reason:
-          type: string
-          pattern: ^(incomplete_work|poor_quality|wrong_deliverable|late_delivery|fake_evidence|no_response|payment_issue|unfair_rejection|other)$
-          title: Reason
-          description: dispute_reason enum value (migration 004)
-        description:
-          type: string
-          maxLength: 2000
-          minLength: 5
-          title: Description
-      additionalProperties: false
-      type: object
-      required:
-      - submission_id
-      - reason
-      - description
-      title: CreateDisputeRequest
-      description: 'Publisher-initiated dispute creation (INC-2026-04-22 Phase 3).
-
-
-        Replaces the silent Ring 2 auto-escalation path that was removed in
-
-        Phase 1. Publishers explicitly dispute a submission they believe is
-
-        fraudulent or non-compliant, instead of Ring 2 making that decision
-
-        for them.
-
-
-        The new dispute is recorded with escalation_tier=1 (human-initiated,
-
-        distinct from the deprecated escalation_tier=2 used by the pre-fix
-
-        arbiter) and the linked submission''s agent_verdict is set to
-
-        ''disputed'' -- this time it''s an explicit publisher decision, not a
-
-        usurpation by the automated ring.'
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    DisputeSummary:
-      properties:
-        id:
-          type: string
-          title: Id
-        task_id:
-          type: string
-          title: Task Id
-        submission_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Submission Id
-        agent_id:
-          type: string
-          title: Agent Id
-        executor_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Executor Id
-        reason:
-          type: string
-          title: Reason
-        description:
-          type: string
-          title: Description
-        status:
-          type: string
-          title: Status
-        priority:
-          type: integer
-          title: Priority
-        escalation_tier:
-          type: integer
-          title: Escalation Tier
-        disputed_amount_usdc:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Disputed Amount Usdc
-        created_at:
-          type: string
-          title: Created At
-        response_deadline:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Response Deadline
-        resolved_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Resolved At
-        winner:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Winner
-      type: object
-      required:
-      - id
-      - task_id
-      - agent_id
-      - reason
-      - description
-      - status
-      - priority
-      - escalation_tier
-      - created_at
-      title: DisputeSummary
-      description: Lightweight dispute row for list endpoints.
-    ResolveDisputeRequest:
-      properties:
-        verdict:
-          type: string
-          pattern: ^(release|refund|split)$
-          title: Verdict
-        reason:
-          type: string
-          maxLength: 2000
-          minLength: 5
-          title: Reason
-        split_pct:
-          anyOf:
-          - type: number
-            maximum: 100.0
-            minimum: 0.0
-          - type: 'null'
-          title: Split Pct
-          description: Agent refund % (required when verdict='split')
-      additionalProperties: false
-      type: object
-      required:
-      - verdict
-      - reason
-      title: ResolveDisputeRequest
-      description: "Human arbiter's verdict on an INCONCLUSIVE dispute.\n\nVerdict options:\n  - 'release':   worker wins, full bounty released\n  - 'refund':    agent wins, full bounty refunded\n  - 'split':     partial release + partial refund\n                 (provide split_pct = agent's refund %, 0-100)"
   securitySchemes:
     erc8128:
       type: apiKey
@@ -746,6 +727,3 @@ components:
 externalDocs:
   description: Full Documentation
   url: https://docs.execution.market
-x-refined-from:
-- execution-market-openapi.json
-- execution-market-openapi.yml

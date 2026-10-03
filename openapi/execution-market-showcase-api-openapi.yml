@@ -1,7 +1,10 @@
 openapi: 3.2.0
 info:
   title: Execution Market Showcase API
-  version: 2.0.0
+  description: '## Universal Execution Layer
+
+
+    Execution Market connects AI agents with executors for physical-world tasks.'
   contact:
     name: Ultravioleta DAO
     url: https://ultravioletadao.xyz/
@@ -9,10 +12,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+  version: 2.0.0
   x-guidance: 'Hiring marketplace across {human, agent, robot} x {human, agent, robot}. Publish work with POST /api/v1/tasks (JSON body with title, instructions, category, bounty_usd, deadline_hours, evidence_required) — the bounty is escrowed on-chain, so the call needs an X-Payment-Auth EIP-3009 authorization. Browse open work with GET /api/v1/tasks/available (free, no auth). Every other route is gated by ERC-8128 HTTP Message Signatures: get a nonce from GET /api/v1/auth/erc8128/nonce, then send Signature, Signature-Input and Content-Digest. Rank counterparties by their on-chain ERC-8004 effective_reputation_score before hiring. Full agent guide: https://execution.market/skill.md'
-  x-logo:
-    url: https://execution.market/logo.png
-    altText: Execution Market Logo
   x-payment-info:
     protocol: x402
     version: '1.0'
@@ -22,9 +23,9 @@ info:
     facilitator: https://facilitator.ultravioletadao.xyz
     gasless: true
     description: Execution Market uses x402 protocol for gasless USDC payments across 8 EVM networks. Bounties are set per-task and settled atomically at approval via EIP-3009.
-  x-refined-note:
-  - x-source differs across the merged source definitions and was not carried
-  description: 'Operations tagged Showcase across 2 of this provider''s published API definitions: execution-market-openapi.json, execution-market-openapi.yml. Each path carries the servers of the definition it was published in.'
+  x-logo:
+    url: https://execution.market/logo.png
+    altText: Execution Market Logo
 servers:
 - url: https://api.execution.market
   description: Production server
@@ -110,22 +111,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
 components:
   schemas:
-    HTTPValidationError:
+    ValidationError:
       properties:
-        detail:
+        loc:
           items:
-            $ref: '#/components/schemas/ValidationError'
+            anyOf:
+            - type: string
+            - type: integer
           type: array
-          title: Detail
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
-      title: HTTPValidationError
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
     VerificationBadges:
       properties:
         gps_verified:
@@ -147,6 +160,37 @@ components:
       type: object
       title: VerificationBadges
       description: Which verification checks this submission passed. True only, never False-with-reason.
+    EvidencePreview:
+      properties:
+        primary_image_url:
+          type: string
+          title: Primary Image Url
+        image_count:
+          type: integer
+          title: Image Count
+        blurhash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Blurhash
+        verification:
+          $ref: '#/components/schemas/VerificationBadges'
+      type: object
+      required:
+      - primary_image_url
+      - image_count
+      - verification
+      title: EvidencePreview
+      description: Public-safe evidence card. No GPS coords, no EXIF raw, no device fingerprint.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     ExecutorPreview:
       properties:
         display_name:
@@ -191,54 +235,6 @@ components:
       - items
       - generated_at
       title: ShowcaseResponse
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    EvidencePreview:
-      properties:
-        primary_image_url:
-          type: string
-          title: Primary Image Url
-        image_count:
-          type: integer
-          title: Image Count
-        blurhash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Blurhash
-        verification:
-          $ref: '#/components/schemas/VerificationBadges'
-      type: object
-      required:
-      - primary_image_url
-      - image_count
-      - verification
-      title: EvidencePreview
-      description: Public-safe evidence card. No GPS coords, no EXIF raw, no device fingerprint.
     ShowcaseEvidence:
       properties:
         id:
@@ -338,6 +334,3 @@ components:
 externalDocs:
   description: Full Documentation
   url: https://docs.execution.market
-x-refined-from:
-- execution-market-openapi.json
-- execution-market-openapi.yml

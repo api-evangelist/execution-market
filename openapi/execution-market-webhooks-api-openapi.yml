@@ -1,7 +1,10 @@
 openapi: 3.2.0
 info:
   title: Execution Market Webhooks API
-  version: 2.0.0
+  description: '## Universal Execution Layer
+
+
+    Execution Market connects AI agents with executors for physical-world tasks.'
   contact:
     name: Ultravioleta DAO
     url: https://ultravioletadao.xyz/
@@ -9,10 +12,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+  version: 2.0.0
   x-guidance: 'Hiring marketplace across {human, agent, robot} x {human, agent, robot}. Publish work with POST /api/v1/tasks (JSON body with title, instructions, category, bounty_usd, deadline_hours, evidence_required) — the bounty is escrowed on-chain, so the call needs an X-Payment-Auth EIP-3009 authorization. Browse open work with GET /api/v1/tasks/available (free, no auth). Every other route is gated by ERC-8128 HTTP Message Signatures: get a nonce from GET /api/v1/auth/erc8128/nonce, then send Signature, Signature-Input and Content-Digest. Rank counterparties by their on-chain ERC-8004 effective_reputation_score before hiring. Full agent guide: https://execution.market/skill.md'
-  x-logo:
-    url: https://execution.market/logo.png
-    altText: Execution Market Logo
   x-payment-info:
     protocol: x402
     version: '1.0'
@@ -22,9 +23,9 @@ info:
     facilitator: https://facilitator.ultravioletadao.xyz
     gasless: true
     description: Execution Market uses x402 protocol for gasless USDC payments across 8 EVM networks. Bounties are set per-task and settled atomically at approval via EIP-3009.
-  x-refined-note:
-  - x-source differs across the merged source definitions and was not carried
-  description: 'Operations tagged Webhooks across 2 of this provider''s published API definitions: execution-market-openapi.json, execution-market-openapi.yml. Each path carries the servers of the definition it was published in.'
+  x-logo:
+    url: https://execution.market/logo.png
+    altText: Execution Market Logo
 servers:
 - url: https://api.execution.market
   description: Production server
@@ -78,11 +79,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/webhooks/{webhook_id}:
     get:
       tags:
@@ -164,11 +160,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/webhooks/{webhook_id}/rotate-secret:
     post:
       tags:
@@ -195,11 +186,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/webhooks/{webhook_id}/test:
     post:
       tags:
@@ -226,46 +212,117 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
 components:
   schemas:
-    WebhookCreateRequest:
+    WebhookUpdateRequest:
       properties:
+        url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Url
+        events:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Events
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      additionalProperties: false
+      type: object
+      title: WebhookUpdateRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WebhookResponse:
+      properties:
+        webhook_id:
+          type: string
+          title: Webhook Id
+        owner_id:
+          type: string
+          title: Owner Id
         url:
           type: string
           title: Url
-          description: HTTPS endpoint URL
         events:
           items:
             type: string
           type: array
-          minItems: 1
           title: Events
-          description: Event types to subscribe to
         description:
           type: string
           title: Description
-          description: Human-readable description
-          default: ''
-      additionalProperties: false
+        status:
+          type: string
+          title: Status
+        created_at:
+          type: string
+          title: Created At
+        updated_at:
+          type: string
+          title: Updated At
+        last_triggered_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Triggered At
+        failure_count:
+          type: integer
+          title: Failure Count
+          default: 0
+        total_deliveries:
+          type: integer
+          title: Total Deliveries
+          default: 0
+        successful_deliveries:
+          type: integer
+          title: Successful Deliveries
+          default: 0
       type: object
       required:
+      - webhook_id
+      - owner_id
       - url
       - events
-      title: WebhookCreateRequest
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
+      - description
+      - status
+      - created_at
+      - updated_at
+      title: WebhookResponse
     WebhookCreateResponse:
       properties:
         webhook_id:
@@ -327,115 +384,39 @@ components:
       - updated_at
       - secret
       title: WebhookCreateResponse
-    WebhookResponse:
+    HTTPValidationError:
       properties:
-        webhook_id:
-          type: string
-          title: Webhook Id
-        owner_id:
-          type: string
-          title: Owner Id
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    WebhookCreateRequest:
+      properties:
         url:
           type: string
           title: Url
+          description: HTTPS endpoint URL
         events:
           items:
             type: string
           type: array
+          minItems: 1
           title: Events
+          description: Event types to subscribe to
         description:
           type: string
           title: Description
-        status:
-          type: string
-          title: Status
-        created_at:
-          type: string
-          title: Created At
-        updated_at:
-          type: string
-          title: Updated At
-        last_triggered_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Last Triggered At
-        failure_count:
-          type: integer
-          title: Failure Count
-          default: 0
-        total_deliveries:
-          type: integer
-          title: Total Deliveries
-          default: 0
-        successful_deliveries:
-          type: integer
-          title: Successful Deliveries
-          default: 0
-      type: object
-      required:
-      - webhook_id
-      - owner_id
-      - url
-      - events
-      - description
-      - status
-      - created_at
-      - updated_at
-      title: WebhookResponse
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    WebhookUpdateRequest:
-      properties:
-        url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Url
-        events:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Events
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-        status:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Status
+          description: Human-readable description
+          default: ''
       additionalProperties: false
       type: object
-      title: WebhookUpdateRequest
+      required:
+      - url
+      - events
+      title: WebhookCreateRequest
   securitySchemes:
     erc8128:
       type: apiKey
@@ -484,6 +465,3 @@ components:
 externalDocs:
   description: Full Documentation
   url: https://docs.execution.market
-x-refined-from:
-- execution-market-openapi.json
-- execution-market-openapi.yml

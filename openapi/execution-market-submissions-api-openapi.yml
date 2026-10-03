@@ -1,7 +1,10 @@
 openapi: 3.2.0
 info:
   title: Execution Market Submissions API
-  version: 2.0.0
+  description: '## Universal Execution Layer
+
+
+    Execution Market connects AI agents with executors for physical-world tasks.'
   contact:
     name: Ultravioleta DAO
     url: https://ultravioletadao.xyz/
@@ -9,10 +12,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+  version: 2.0.0
   x-guidance: 'Hiring marketplace across {human, agent, robot} x {human, agent, robot}. Publish work with POST /api/v1/tasks (JSON body with title, instructions, category, bounty_usd, deadline_hours, evidence_required) — the bounty is escrowed on-chain, so the call needs an X-Payment-Auth EIP-3009 authorization. Browse open work with GET /api/v1/tasks/available (free, no auth). Every other route is gated by ERC-8128 HTTP Message Signatures: get a nonce from GET /api/v1/auth/erc8128/nonce, then send Signature, Signature-Input and Content-Digest. Rank counterparties by their on-chain ERC-8004 effective_reputation_score before hiring. Full agent guide: https://execution.market/skill.md'
-  x-logo:
-    url: https://execution.market/logo.png
-    altText: Execution Market Logo
   x-payment-info:
     protocol: x402
     version: '1.0'
@@ -22,9 +23,9 @@ info:
     facilitator: https://facilitator.ultravioletadao.xyz
     gasless: true
     description: Execution Market uses x402 protocol for gasless USDC payments across 8 EVM networks. Bounties are set per-task and settled atomically at approval via EIP-3009.
-  x-refined-note:
-  - x-source differs across the merged source definitions and was not carried
-  description: 'Operations tagged Submissions across 2 of this provider''s published API definitions: execution-market-openapi.json, execution-market-openapi.yml. Each path carries the servers of the definition it was published in.'
+  x-logo:
+    url: https://execution.market/logo.png
+    altText: Execution Market Logo
 servers:
 - url: https://api.execution.market
   description: Production server
@@ -85,11 +86,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       security: []
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/submissions/{submission_id}/approve/challenge:
     get:
       tags:
@@ -143,11 +139,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/submissions/{submission_id}/approve:
     post:
       tags:
@@ -213,11 +204,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/submissions/{submission_id}/reject:
     post:
       tags:
@@ -278,11 +264,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
   /api/v1/submissions/{submission_id}/request-more-info:
     post:
       tags:
@@ -343,96 +324,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    servers:
-    - url: https://api.execution.market
-      description: Production server
-    - url: http://localhost:8000
-      description: Local development
 components:
   schemas:
-    ErrorResponse:
-      properties:
-        error:
-          type: string
-          title: Error
-          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
-        message:
-          type: string
-          title: Message
-          description: Human-readable error message
-        details:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Details
-          description: Additional error context
-      type: object
-      required:
-      - error
-      - message
-      title: ErrorResponse
-      description: Error response model.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    SuccessResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          description: Whether the operation succeeded
-          default: true
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
-        data:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Data
-          description: Additional response data
-      type: object
-      required:
-      - message
-      title: SuccessResponse
-      description: Generic success response.
-    RejectionRequest:
+    RequestMoreInfoRequest:
       properties:
         notes:
           type: string
           maxLength: 1000
-          minLength: 10
+          minLength: 5
           title: Notes
-          description: Required reason for rejection
-        severity:
-          type: string
-          pattern: ^(minor|major)$
-          title: Severity
-          description: 'Rejection severity: ''minor'' (no on-chain effect) or ''major'' (records negative reputation)'
-          default: minor
-        reputation_score:
-          anyOf:
-          - type: integer
-            maximum: 50.0
-            minimum: 0.0
-          - type: 'null'
-          title: Reputation Score
-          description: Reputation score for major rejections (0-50). Defaults to 30 if omitted.
+          description: Required clarification request
       additionalProperties: false
       type: object
       required:
       - notes
-      title: RejectionRequest
-      description: Request model for rejecting a submission.
+      title: RequestMoreInfoRequest
+      description: Request model for requesting more info on a submission.
     ValidationError:
       properties:
         loc:
@@ -459,6 +366,74 @@ components:
       - msg
       - type
       title: ValidationError
+    SuccessResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          description: Whether the operation succeeded
+          default: true
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        data:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Data
+          description: Additional response data
+      type: object
+      required:
+      - message
+      title: SuccessResponse
+      description: Generic success response.
+    ApprovalRequest:
+      properties:
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Notes
+          description: Optional notes about the approval
+        rating_score:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Rating Score
+          description: 'DEPRECATED (2026-08-28) — ACCEPTED AND IGNORED. It used to emit the publisher→executor rating through the legacy path, which puts the FACILITATOR on record as its on-chain author. That no longer blocks your own signed rating: dedup counts authors, not parties, so a legacy rating is superseded instead of 409''d, and the 409 ''already rated in this direction'' now means only that YOU already signed it — it names the author inline (`authored_by: <wallet> (rater)`). Approving pays; rate separately with POST /reputation/relay/{prepare,submit} (signed by you, gasless) or the legacy /reputation/workers/rate if you cannot sign. Still accepted so no client breaks.'
+          deprecated: true
+        lifecycle_order:
+          anyOf:
+          - $ref: '#/components/schemas/LifecycleOrderPayload'
+          - type: 'null'
+          description: EIP-712 escrow lifecycle order signed by the payer, authorizing this release. Get the typed data from GET /api/v1/escrow/task/{task_id}/lifecycle-challenge.
+      additionalProperties: false
+      type: object
+      title: ApprovalRequest
+      description: Request model for approving a submission.
+    SubmissionListResponse:
+      properties:
+        submissions:
+          items:
+            $ref: '#/components/schemas/SubmissionResponse'
+          type: array
+          title: Submissions
+          description: List of submission objects
+        count:
+          type: integer
+          title: Count
+          description: Total number of submissions
+      type: object
+      required:
+      - submissions
+      - count
+      title: SubmissionListResponse
+      description: Response model for submission list.
     LifecycleOrderPayload:
       properties:
         action:
@@ -511,51 +486,6 @@ components:
         ``GET /api/v1/escrow/task/{task_id}/lifecycle-challenge``. It expires in 10
 
         minutes: it authorizes ONE move, not a standing permission.'
-    ApprovalRequest:
-      properties:
-        notes:
-          anyOf:
-          - type: string
-            maxLength: 1000
-          - type: 'null'
-          title: Notes
-          description: Optional notes about the approval
-        rating_score:
-          anyOf:
-          - type: integer
-            maximum: 100.0
-            minimum: 0.0
-          - type: 'null'
-          title: Rating Score
-          description: 'DEPRECATED (2026-08-28) — ACCEPTED AND IGNORED. It used to emit the publisher→executor rating through the legacy path, which puts the FACILITATOR on record as its on-chain author. That no longer blocks your own signed rating: dedup counts authors, not parties, so a legacy rating is superseded instead of 409''d, and the 409 ''already rated in this direction'' now means only that YOU already signed it — it names the author inline (`authored_by: <wallet> (rater)`). Approving pays; rate separately with POST /reputation/relay/{prepare,submit} (signed by you, gasless) or the legacy /reputation/workers/rate if you cannot sign. Still accepted so no client breaks.'
-          deprecated: true
-        lifecycle_order:
-          anyOf:
-          - $ref: '#/components/schemas/LifecycleOrderPayload'
-          - type: 'null'
-          description: EIP-712 escrow lifecycle order signed by the payer, authorizing this release. Get the typed data from GET /api/v1/escrow/task/{task_id}/lifecycle-challenge.
-      additionalProperties: false
-      type: object
-      title: ApprovalRequest
-      description: Request model for approving a submission.
-    SubmissionListResponse:
-      properties:
-        submissions:
-          items:
-            $ref: '#/components/schemas/SubmissionResponse'
-          type: array
-          title: Submissions
-          description: List of submission objects
-        count:
-          type: integer
-          title: Count
-          description: Total number of submissions
-      type: object
-      required:
-      - submissions
-      - count
-      title: SubmissionListResponse
-      description: Response model for submission list.
     SubmissionResponse:
       properties:
         id:
@@ -721,20 +651,66 @@ components:
       - submitted_at
       title: SubmissionResponse
       description: Response model for submission data.
-    RequestMoreInfoRequest:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    RejectionRequest:
       properties:
         notes:
           type: string
           maxLength: 1000
-          minLength: 5
+          minLength: 10
           title: Notes
-          description: Required clarification request
+          description: Required reason for rejection
+        severity:
+          type: string
+          pattern: ^(minor|major)$
+          title: Severity
+          description: 'Rejection severity: ''minor'' (no on-chain effect) or ''major'' (records negative reputation)'
+          default: minor
+        reputation_score:
+          anyOf:
+          - type: integer
+            maximum: 50.0
+            minimum: 0.0
+          - type: 'null'
+          title: Reputation Score
+          description: Reputation score for major rejections (0-50). Defaults to 30 if omitted.
       additionalProperties: false
       type: object
       required:
       - notes
-      title: RequestMoreInfoRequest
-      description: Request model for requesting more info on a submission.
+      title: RejectionRequest
+      description: Request model for rejecting a submission.
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
+          type: string
+          title: Message
+          description: Human-readable error message
+        details:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Details
+          description: Additional error context
+      type: object
+      required:
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
   securitySchemes:
     erc8128:
       type: apiKey
@@ -783,6 +759,3 @@ components:
 externalDocs:
   description: Full Documentation
   url: https://docs.execution.market
-x-refined-from:
-- execution-market-openapi.json
-- execution-market-openapi.yml
