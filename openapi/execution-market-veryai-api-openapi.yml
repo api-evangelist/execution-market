@@ -194,20 +194,27 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    OAuthUrlResponse:
+    VeryAiStatusResponse:
       properties:
-        url:
-          type: string
-          title: Url
-        state:
-          type: string
-          title: State
+        verified:
+          type: boolean
+          title: Verified
+          default: false
+        level:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Level
+          description: palm_single | palm_dual | None
+        verified_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Verified At
+          description: ISO 8601 timestamp
       type: object
-      required:
-      - url
-      - state
-      title: OAuthUrlResponse
-      description: Returns an authorize URL the frontend redirects to.
+      title: VeryAiStatusResponse
+      description: Current VeryAI status for an executor.
     ValidationError:
       properties:
         loc:
@@ -243,27 +250,20 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    VeryAiStatusResponse:
+    OAuthUrlResponse:
       properties:
-        verified:
-          type: boolean
-          title: Verified
-          default: false
-        level:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Level
-          description: palm_single | palm_dual | None
-        verified_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Verified At
-          description: ISO 8601 timestamp
+        url:
+          type: string
+          title: Url
+        state:
+          type: string
+          title: State
       type: object
-      title: VeryAiStatusResponse
-      description: Current VeryAI status for an executor.
+      required:
+      - url
+      - state
+      title: OAuthUrlResponse
+      description: Returns an authorize URL the frontend redirects to.
   securitySchemes:
     erc8128:
       type: apiKey

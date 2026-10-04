@@ -335,52 +335,32 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    CreateDisputeRequest:
+    ResolveDisputeRequest:
       properties:
-        submission_id:
+        verdict:
           type: string
-          maxLength: 36
-          minLength: 36
-          title: Submission Id
-          description: UUID of the submission being disputed
+          pattern: ^(release|refund|split)$
+          title: Verdict
         reason:
-          type: string
-          pattern: ^(incomplete_work|poor_quality|wrong_deliverable|late_delivery|fake_evidence|no_response|payment_issue|unfair_rejection|other)$
-          title: Reason
-          description: dispute_reason enum value (migration 004)
-        description:
           type: string
           maxLength: 2000
           minLength: 5
-          title: Description
+          title: Reason
+        split_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Split Pct
+          description: Agent refund % (required when verdict='split')
       additionalProperties: false
       type: object
       required:
-      - submission_id
+      - verdict
       - reason
-      - description
-      title: CreateDisputeRequest
-      description: 'Publisher-initiated dispute creation (INC-2026-04-22 Phase 3).
-
-
-        Replaces the silent Ring 2 auto-escalation path that was removed in
-
-        Phase 1. Publishers explicitly dispute a submission they believe is
-
-        fraudulent or non-compliant, instead of Ring 2 making that decision
-
-        for them.
-
-
-        The new dispute is recorded with escalation_tier=1 (human-initiated,
-
-        distinct from the deprecated escalation_tier=2 used by the pre-fix
-
-        arbiter) and the linked submission''s agent_verdict is set to
-
-        ''disputed'' -- this time it''s an explicit publisher decision, not a
-
-        usurpation by the automated ring.'
+      title: ResolveDisputeRequest
+      description: "Human arbiter's verdict on an INCONCLUSIVE dispute.\n\nVerdict options:\n  - 'release':   worker wins, full bounty released\n  - 'refund':    agent wins, full bounty refunded\n  - 'split':     partial release + partial refund\n                 (provide split_pct = agent's refund %, 0-100)"
     DisputeSummary:
       properties:
         id:
@@ -453,101 +433,6 @@ components:
       - created_at
       title: DisputeSummary
       description: Lightweight dispute row for list endpoints.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ResolveDisputeRequest:
-      properties:
-        verdict:
-          type: string
-          pattern: ^(release|refund|split)$
-          title: Verdict
-        reason:
-          type: string
-          maxLength: 2000
-          minLength: 5
-          title: Reason
-        split_pct:
-          anyOf:
-          - type: number
-            maximum: 100.0
-            minimum: 0.0
-          - type: 'null'
-          title: Split Pct
-          description: Agent refund % (required when verdict='split')
-      additionalProperties: false
-      type: object
-      required:
-      - verdict
-      - reason
-      title: ResolveDisputeRequest
-      description: "Human arbiter's verdict on an INCONCLUSIVE dispute.\n\nVerdict options:\n  - 'release':   worker wins, full bounty released\n  - 'refund':    agent wins, full bounty refunded\n  - 'split':     partial release + partial refund\n                 (provide split_pct = agent's refund %, 0-100)"
-    ResolveDisputeResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-        dispute_id:
-          type: string
-          title: Dispute Id
-        verdict:
-          type: string
-          title: Verdict
-        agent_refund_usdc:
-          type: number
-          title: Agent Refund Usdc
-        executor_payout_usdc:
-          type: number
-          title: Executor Payout Usdc
-        resolved_at:
-          type: string
-          title: Resolved At
-        action_triggered:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Action Triggered
-      type: object
-      required:
-      - success
-      - dispute_id
-      - verdict
-      - agent_refund_usdc
-      - executor_payout_usdc
-      - resolved_at
-      title: ResolveDisputeResponse
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     DisputeDetail:
       properties:
         id:
@@ -664,6 +549,40 @@ components:
       - created_at
       title: DisputeDetail
       description: Full dispute record, including the arbiter verdict snapshot.
+    ResolveDisputeResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+        dispute_id:
+          type: string
+          title: Dispute Id
+        verdict:
+          type: string
+          title: Verdict
+        agent_refund_usdc:
+          type: number
+          title: Agent Refund Usdc
+        executor_payout_usdc:
+          type: number
+          title: Executor Payout Usdc
+        resolved_at:
+          type: string
+          title: Resolved At
+        action_triggered:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Action Triggered
+      type: object
+      required:
+      - success
+      - dispute_id
+      - verdict
+      - agent_refund_usdc
+      - executor_payout_usdc
+      - resolved_at
+      title: ResolveDisputeResponse
     DisputeListResponse:
       properties:
         items:
@@ -679,6 +598,87 @@ components:
       - items
       - total
       title: DisputeListResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    CreateDisputeRequest:
+      properties:
+        submission_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+          title: Submission Id
+          description: UUID of the submission being disputed
+        reason:
+          type: string
+          pattern: ^(incomplete_work|poor_quality|wrong_deliverable|late_delivery|fake_evidence|no_response|payment_issue|unfair_rejection|other)$
+          title: Reason
+          description: dispute_reason enum value (migration 004)
+        description:
+          type: string
+          maxLength: 2000
+          minLength: 5
+          title: Description
+      additionalProperties: false
+      type: object
+      required:
+      - submission_id
+      - reason
+      - description
+      title: CreateDisputeRequest
+      description: 'Publisher-initiated dispute creation (INC-2026-04-22 Phase 3).
+
+
+        Replaces the silent Ring 2 auto-escalation path that was removed in
+
+        Phase 1. Publishers explicitly dispute a submission they believe is
+
+        fraudulent or non-compliant, instead of Ring 2 making that decision
+
+        for them.
+
+
+        The new dispute is recorded with escalation_tier=1 (human-initiated,
+
+        distinct from the deprecated escalation_tier=2 used by the pre-fix
+
+        arbiter) and the linked submission''s agent_verdict is set to
+
+        ''disputed'' -- this time it''s an explicit publisher decision, not a
+
+        usurpation by the automated ring.'
   securitySchemes:
     erc8128:
       type: apiKey

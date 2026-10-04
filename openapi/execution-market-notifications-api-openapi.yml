@@ -149,6 +149,56 @@ components:
       - executor_id
       - removed
       title: UnregisterPushTokenResponse
+    RegisterPushTokenRequest:
+      properties:
+        executor_id:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          title: Executor Id
+          description: Executor this device belongs to
+        push_token:
+          type: string
+          maxLength: 255
+          pattern: ^Expo(nent)?PushToken\[[^\]\s]+\]$
+          title: Push Token
+          description: Expo push token, e.g. ExponentPushToken[...]
+        platform:
+          type: string
+          enum:
+          - ios
+          - android
+          title: Platform
+          description: Platform.OS of the registering device
+      type: object
+      required:
+      - executor_id
+      - push_token
+      - platform
+      title: RegisterPushTokenRequest
+      description: Body the mobile app sends (em-mobile/lib/notifications.ts::registerPushToken).
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
+          type: string
+          title: Message
+          description: Human-readable error message
+        details:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Details
+          description: Additional error context
+      type: object
+      required:
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
     ValidationError:
       properties:
         loc:
@@ -175,6 +225,15 @@ components:
       - msg
       - type
       title: ValidationError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     RegisterPushTokenResponse:
       properties:
         executor_id:
@@ -204,65 +263,6 @@ components:
       - executor_id
       title: UnregisterPushTokenRequest
       description: Body the app sends at logout (em-mobile/lib/notifications.ts::unregisterPushToken).
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ErrorResponse:
-      properties:
-        error:
-          type: string
-          title: Error
-          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
-        message:
-          type: string
-          title: Message
-          description: Human-readable error message
-        details:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Details
-          description: Additional error context
-      type: object
-      required:
-      - error
-      - message
-      title: ErrorResponse
-      description: Error response model.
-    RegisterPushTokenRequest:
-      properties:
-        executor_id:
-          type: string
-          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
-          title: Executor Id
-          description: Executor this device belongs to
-        push_token:
-          type: string
-          maxLength: 255
-          pattern: ^Expo(nent)?PushToken\[[^\]\s]+\]$
-          title: Push Token
-          description: Expo push token, e.g. ExponentPushToken[...]
-        platform:
-          type: string
-          enum:
-          - ios
-          - android
-          title: Platform
-          description: Platform.OS of the registering device
-      type: object
-      required:
-      - executor_id
-      - push_token
-      - platform
-      title: RegisterPushTokenRequest
-      description: Body the mobile app sends (em-mobile/lib/notifications.ts::registerPushToken).
   securitySchemes:
     erc8128:
       type: apiKey

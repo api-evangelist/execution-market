@@ -321,6 +321,38 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    CreateReportRequest:
+      properties:
+        target_type:
+          type: string
+          pattern: ^(task|submission|message|user)$
+          title: Target Type
+          description: Type of content being reported
+        target_id:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Target Id
+          description: ID of the reported content
+        reason_category:
+          type: string
+          pattern: ^(spam|abuse|fraud|inappropriate|harassment|other)$
+          title: Reason Category
+          description: Category of the report reason
+        reason_text:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Reason Text
+          description: Additional details
+      additionalProperties: false
+      type: object
+      required:
+      - target_type
+      - target_id
+      - reason_category
+      title: CreateReportRequest
     BlockedUserResponse:
       properties:
         id:
@@ -338,45 +370,6 @@ components:
       - blocked_user_id
       - created_at
       title: BlockedUserResponse
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    BlockUserRequest:
-      properties:
-        blocked_user_id:
-          type: string
-          maxLength: 36
-          minLength: 36
-          title: Blocked User Id
-          description: UUID of the user to block
-      additionalProperties: false
-      type: object
-      required:
-      - blocked_user_id
-      title: BlockUserRequest
     ReportResponse:
       properties:
         id:
@@ -425,38 +418,45 @@ components:
       - status
       - created_at
       title: ReportResponse
-    CreateReportRequest:
+    ValidationError:
       properties:
-        target_type:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
           type: string
-          pattern: ^(task|submission|message|user)$
-          title: Target Type
-          description: Type of content being reported
-        target_id:
+          title: Message
+        type:
           type: string
-          maxLength: 255
-          minLength: 1
-          title: Target Id
-          description: ID of the reported content
-        reason_category:
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    BlockUserRequest:
+      properties:
+        blocked_user_id:
           type: string
-          pattern: ^(spam|abuse|fraud|inappropriate|harassment|other)$
-          title: Reason Category
-          description: Category of the report reason
-        reason_text:
-          anyOf:
-          - type: string
-            maxLength: 2000
-          - type: 'null'
-          title: Reason Text
-          description: Additional details
+          maxLength: 36
+          minLength: 36
+          title: Blocked User Id
+          description: UUID of the user to block
       additionalProperties: false
       type: object
       required:
-      - target_type
-      - target_id
-      - reason_category
-      title: CreateReportRequest
+      - blocked_user_id
+      title: BlockUserRequest
     HTTPValidationError:
       properties:
         detail:

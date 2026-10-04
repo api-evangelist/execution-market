@@ -428,6 +428,280 @@ paths:
               schema: {}
 components:
   schemas:
+    Dx402KeyRequest:
+      properties:
+        public_key:
+          type: string
+          title: Public Key
+          description: 'Your DX402 PUBLIC key: SEC1-compressed secp256k1 (`0x02`/`0x03` + 64 hex) or X25519 (`0x` + 64 hex). This is public material -- never send a private key. It SHOULD NOT be your payment key: this one only ever decrypts, so a leak costs you readable evidence instead of your funds, and it is what lets a buyer on a custodial wallet open their own evidence at all (a custodian signs but does not do ECDH).'
+          examples:
+          - '0x02abababababababababababababababababababababababababababababababab'
+        key_alg:
+          type: string
+          title: Key Alg
+          description: '`ECIES-secp256k1` (33-byte key) or `ECIES-X25519` (32-byte).'
+          default: ECIES-secp256k1
+      type: object
+      required:
+      - public_key
+      title: Dx402KeyRequest
+      description: Declare the PUBLIC key your durable evidence should be sealed to.
+    AccountExportResponse:
+      properties:
+        exported_at:
+          type: string
+          title: Exported At
+          description: Export timestamp (ISO 8601)
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the exporting executor
+        profile:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Profile
+          description: Full executor profile row
+        submissions:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Submissions
+          description: All submissions by this executor
+        applications:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Applications
+          description: All task applications by this executor
+        reports:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Reports
+          description: Reports filed by this user
+        blocked_users:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Blocked Users
+          description: Block records owned by this user
+      type: object
+      required:
+      - exported_at
+      - executor_id
+      - submissions
+      - applications
+      - reports
+      - blocked_users
+      title: AccountExportResponse
+      description: 'GDPR data export payload (GET /account/export).
+
+
+        Documentation-only: the endpoint returns a JSONResponse (with a
+
+        Content-Disposition attachment header), which bypasses response-model
+
+        serialization at runtime — no keys are filtered.'
+    UpdateWalletResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        wallet_address:
+          type: string
+          title: Wallet Address
+          description: Wallet address now set on the executor profile (lowercase)
+        previous_wallet_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Previous Wallet Address
+          description: Wallet that was replaced (null on a no-op change)
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor
+        changed:
+          type: boolean
+          title: Changed
+          description: False when the wallet was already set to that address (no-op)
+      type: object
+      required:
+      - message
+      - wallet_address
+      - executor_id
+      - changed
+      title: UpdateWalletResponse
+      description: Response for a wallet address change.
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
+          type: string
+          title: Message
+          description: Human-readable error message
+        details:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Details
+          description: Additional error context
+      type: object
+      required:
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
+    AccountDeleteResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+      type: object
+      required:
+      - message
+      title: AccountDeleteResponse
+      description: Response for account deletion (anonymization).
+    SolanaPayoutAddressResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        solana_payout_address:
+          type: string
+          title: Solana Payout Address
+          description: Address now bound (base58, case preserved)
+        previous_solana_payout_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Previous Solana Payout Address
+          description: Address that was replaced (null when none was set)
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor
+        changed:
+          type: boolean
+          title: Changed
+          description: False when that address was already bound (no-op)
+      type: object
+      required:
+      - message
+      - solana_payout_address
+      - executor_id
+      - changed
+      title: SolanaPayoutAddressResponse
+      description: Response for a Solana payout address binding.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    UpdateWalletRequest:
+      properties:
+        new_wallet_address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+          title: New Wallet Address
+          description: The wallet to switch to (0x-prefixed, 42 chars)
+        message:
+          type: string
+          maxLength: 300
+          minLength: 80
+          title: Message
+          description: 'Exact human-readable message that was signed. Format: ''Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601 UTC>'''
+        signature:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{130}$
+          title: Signature
+          description: EIP-191 signature of the message, signed by new_wallet_address
+      additionalProperties: false
+      type: object
+      required:
+      - new_wallet_address
+      - message
+      - signature
+      title: UpdateWalletRequest
+      description: 'Request to change the executor''s wallet address.
+
+
+        The new wallet must sign the exact ``message`` to prove ownership. The
+
+        message MUST follow the format
+
+        ``"Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601>"``
+
+        and the timestamp must be within the last 10 minutes (replay protection).'
+    LinkWalletResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor bound to the session
+        wallet_address:
+          type: string
+          title: Wallet Address
+          description: Linked wallet address (lowercase)
+        linked:
+          type: boolean
+          title: Linked
+          description: False when the wallet was already linked to this session (no-op)
+      type: object
+      required:
+      - message
+      - executor_id
+      - wallet_address
+      - linked
+      title: LinkWalletResponse
+      description: Response for linking a wallet to the current session.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     LinkWalletRequest:
       properties:
         wallet_address:
@@ -496,227 +770,6 @@ components:
         keys, so possession of the session IS ownership of the wallet; external
 
         wallets must keep using the signature flow.'
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    SolanaPayoutAddressResponse:
-      properties:
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
-        solana_payout_address:
-          type: string
-          title: Solana Payout Address
-          description: Address now bound (base58, case preserved)
-        previous_solana_payout_address:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Previous Solana Payout Address
-          description: Address that was replaced (null when none was set)
-        executor_id:
-          type: string
-          title: Executor Id
-          description: UUID of the executor
-        changed:
-          type: boolean
-          title: Changed
-          description: False when that address was already bound (no-op)
-      type: object
-      required:
-      - message
-      - solana_payout_address
-      - executor_id
-      - changed
-      title: SolanaPayoutAddressResponse
-      description: Response for a Solana payout address binding.
-    Dx402KeyResponse:
-      properties:
-        wallet_address:
-          type: string
-          title: Wallet Address
-          description: Wallet the key belongs to.
-        public_key:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Public Key
-          description: The declared public key, or null if none is declared.
-        key_alg:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Key Alg
-          description: Wire form of the key.
-        updated_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Updated At
-          description: When it was last set.
-      type: object
-      required:
-      - wallet_address
-      title: Dx402KeyResponse
-      description: The declared key currently on file for a wallet.
-    UpdateWalletRequest:
-      properties:
-        new_wallet_address:
-          type: string
-          pattern: ^0x[a-fA-F0-9]{40}$
-          title: New Wallet Address
-          description: The wallet to switch to (0x-prefixed, 42 chars)
-        message:
-          type: string
-          maxLength: 300
-          minLength: 80
-          title: Message
-          description: 'Exact human-readable message that was signed. Format: ''Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601 UTC>'''
-        signature:
-          type: string
-          pattern: ^0x[a-fA-F0-9]{130}$
-          title: Signature
-          description: EIP-191 signature of the message, signed by new_wallet_address
-      additionalProperties: false
-      type: object
-      required:
-      - new_wallet_address
-      - message
-      - signature
-      title: UpdateWalletRequest
-      description: 'Request to change the executor''s wallet address.
-
-
-        The new wallet must sign the exact ``message`` to prove ownership. The
-
-        message MUST follow the format
-
-        ``"Execution Market: change wallet to <new_wallet> for executor <executor_id> at <ISO8601>"``
-
-        and the timestamp must be within the last 10 minutes (replay protection).'
-    AccountDeleteResponse:
-      properties:
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
-      type: object
-      required:
-      - message
-      title: AccountDeleteResponse
-      description: Response for account deletion (anonymization).
-    LinkWalletResponse:
-      properties:
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
-        executor_id:
-          type: string
-          title: Executor Id
-          description: UUID of the executor bound to the session
-        wallet_address:
-          type: string
-          title: Wallet Address
-          description: Linked wallet address (lowercase)
-        linked:
-          type: boolean
-          title: Linked
-          description: False when the wallet was already linked to this session (no-op)
-      type: object
-      required:
-      - message
-      - executor_id
-      - wallet_address
-      - linked
-      title: LinkWalletResponse
-      description: Response for linking a wallet to the current session.
-    AccountExportResponse:
-      properties:
-        exported_at:
-          type: string
-          title: Exported At
-          description: Export timestamp (ISO 8601)
-        executor_id:
-          type: string
-          title: Executor Id
-          description: UUID of the exporting executor
-        profile:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Profile
-          description: Full executor profile row
-        submissions:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Submissions
-          description: All submissions by this executor
-        applications:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Applications
-          description: All task applications by this executor
-        reports:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Reports
-          description: Reports filed by this user
-        blocked_users:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Blocked Users
-          description: Block records owned by this user
-      type: object
-      required:
-      - exported_at
-      - executor_id
-      - submissions
-      - applications
-      - reports
-      - blocked_users
-      title: AccountExportResponse
-      description: 'GDPR data export payload (GET /account/export).
-
-
-        Documentation-only: the endpoint returns a JSONResponse (with a
-
-        Content-Disposition attachment header), which bypasses response-model
-
-        serialization at runtime — no keys are filtered.'
     SolanaPayoutAddressRequest:
       properties:
         solana_payout_address:
@@ -760,88 +813,35 @@ components:
         itself: without that proof anyone could point another executor''s bounty at
 
         their own wallet.'
-    UpdateWalletResponse:
+    Dx402KeyResponse:
       properties:
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
         wallet_address:
           type: string
           title: Wallet Address
-          description: Wallet address now set on the executor profile (lowercase)
-        previous_wallet_address:
+          description: Wallet the key belongs to.
+        public_key:
           anyOf:
           - type: string
           - type: 'null'
-          title: Previous Wallet Address
-          description: Wallet that was replaced (null on a no-op change)
-        executor_id:
-          type: string
-          title: Executor Id
-          description: UUID of the executor
-        changed:
-          type: boolean
-          title: Changed
-          description: False when the wallet was already set to that address (no-op)
-      type: object
-      required:
-      - message
-      - wallet_address
-      - executor_id
-      - changed
-      title: UpdateWalletResponse
-      description: Response for a wallet address change.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ErrorResponse:
-      properties:
-        error:
-          type: string
-          title: Error
-          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
-        message:
-          type: string
-          title: Message
-          description: Human-readable error message
-        details:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Details
-          description: Additional error context
-      type: object
-      required:
-      - error
-      - message
-      title: ErrorResponse
-      description: Error response model.
-    Dx402KeyRequest:
-      properties:
-        public_key:
-          type: string
           title: Public Key
-          description: 'Your DX402 PUBLIC key: SEC1-compressed secp256k1 (`0x02`/`0x03` + 64 hex) or X25519 (`0x` + 64 hex). This is public material -- never send a private key. It SHOULD NOT be your payment key: this one only ever decrypts, so a leak costs you readable evidence instead of your funds, and it is what lets a buyer on a custodial wallet open their own evidence at all (a custodian signs but does not do ECDH).'
-          examples:
-          - '0x02abababababababababababababababababababababababababababababababab'
+          description: The declared public key, or null if none is declared.
         key_alg:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Key Alg
-          description: '`ECIES-secp256k1` (33-byte key) or `ECIES-X25519` (32-byte).'
-          default: ECIES-secp256k1
+          description: Wire form of the key.
+        updated_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated At
+          description: When it was last set.
       type: object
       required:
-      - public_key
-      title: Dx402KeyRequest
-      description: Declare the PUBLIC key your durable evidence should be sealed to.
+      - wallet_address
+      title: Dx402KeyResponse
+      description: The declared key currently on file for a wallet.
   securitySchemes:
     erc8128:
       type: apiKey

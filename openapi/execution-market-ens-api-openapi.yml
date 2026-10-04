@@ -199,6 +199,153 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ClaimSubnameRequest:
+      properties:
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor
+        label:
+          type: string
+          maxLength: 63
+          minLength: 1
+          title: Label
+          description: Subname label (e.g., 'alice' for alice.execution-market.eth)
+      additionalProperties: false
+      type: object
+      required:
+      - executor_id
+      - label
+      title: ClaimSubnameRequest
+      description: Claim a subname under execution-market.eth.
+    LinkENSRequest:
+      properties:
+        executor_id:
+          type: string
+          title: Executor Id
+          description: UUID of the executor
+      additionalProperties: false
+      type: object
+      required:
+      - executor_id
+      title: LinkENSRequest
+      description: Link an existing ENS name to executor profile.
+    LinkENSResponse:
+      properties:
+        linked:
+          type: boolean
+          title: Linked
+        ens_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ens Name
+        ens_avatar:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ens Avatar
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - linked
+      - message
+      title: LinkENSResponse
+      description: Result of ENS linking.
+    ENSRecordsResponse:
+      properties:
+        name:
+          type: string
+          title: Name
+        standard_records:
+          additionalProperties: true
+          type: object
+          title: Standard Records
+          default: {}
+        em_metadata:
+          additionalProperties: true
+          type: object
+          title: Em Metadata
+          default: {}
+        total_records:
+          type: integer
+          title: Total Records
+          default: 0
+        network:
+          type: string
+          title: Network
+          default: mainnet
+      type: object
+      required:
+      - name
+      title: ENSRecordsResponse
+      description: ENS text records for a name.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ClaimSubnameResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+        subname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subname
+        tx_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tx Hash
+        explorer:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Explorer
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - success
+      - message
+      title: ClaimSubnameResponse
+      description: Result of subname claim.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
     ENSResolveResponse:
       properties:
         name:
@@ -238,153 +385,6 @@ components:
       - resolved
       title: ENSResolveResponse
       description: ENS resolution result.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    LinkENSRequest:
-      properties:
-        executor_id:
-          type: string
-          title: Executor Id
-          description: UUID of the executor
-      additionalProperties: false
-      type: object
-      required:
-      - executor_id
-      title: LinkENSRequest
-      description: Link an existing ENS name to executor profile.
-    LinkENSResponse:
-      properties:
-        linked:
-          type: boolean
-          title: Linked
-        ens_name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Ens Name
-        ens_avatar:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Ens Avatar
-        message:
-          type: string
-          title: Message
-      type: object
-      required:
-      - linked
-      - message
-      title: LinkENSResponse
-      description: Result of ENS linking.
-    ClaimSubnameResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-        subname:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Subname
-        tx_hash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tx Hash
-        explorer:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Explorer
-        message:
-          type: string
-          title: Message
-      type: object
-      required:
-      - success
-      - message
-      title: ClaimSubnameResponse
-      description: Result of subname claim.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ENSRecordsResponse:
-      properties:
-        name:
-          type: string
-          title: Name
-        standard_records:
-          additionalProperties: true
-          type: object
-          title: Standard Records
-          default: {}
-        em_metadata:
-          additionalProperties: true
-          type: object
-          title: Em Metadata
-          default: {}
-        total_records:
-          type: integer
-          title: Total Records
-          default: 0
-        network:
-          type: string
-          title: Network
-          default: mainnet
-      type: object
-      required:
-      - name
-      title: ENSRecordsResponse
-      description: ENS text records for a name.
-    ClaimSubnameRequest:
-      properties:
-        executor_id:
-          type: string
-          title: Executor Id
-          description: UUID of the executor
-        label:
-          type: string
-          maxLength: 63
-          minLength: 1
-          title: Label
-          description: Subname label (e.g., 'alice' for alice.execution-market.eth)
-      additionalProperties: false
-      type: object
-      required:
-      - executor_id
-      - label
-      title: ClaimSubnameRequest
-      description: Claim a subname under execution-market.eth.
   securitySchemes:
     erc8128:
       type: apiKey

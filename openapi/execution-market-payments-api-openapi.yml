@@ -121,38 +121,6 @@ paths:
               schema: {}
 components:
   schemas:
-    ErrorResponse:
-      properties:
-        error:
-          type: string
-          title: Error
-          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
-        message:
-          type: string
-          title: Message
-          description: Human-readable error message
-        details:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Details
-          description: Additional error context
-      type: object
-      required:
-      - error
-      - message
-      title: ErrorResponse
-      description: Error response model.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     ValidationError:
       properties:
         loc:
@@ -179,6 +147,38 @@ components:
       - msg
       - type
       title: ValidationError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
+          type: string
+          title: Message
+          description: Human-readable error message
+        details:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Details
+          description: Additional error context
+      type: object
+      required:
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
   securitySchemes:
     erc8128:
       type: apiKey

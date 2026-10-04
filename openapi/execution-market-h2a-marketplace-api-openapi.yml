@@ -824,53 +824,30 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ApproveH2ASubmissionRequest:
+    H2AApplicationListResponse:
       properties:
-        submission_id:
+        task_id:
           type: string
-          maxLength: 36
-          minLength: 36
-          title: Submission Id
-        verdict:
-          type: string
-          enum:
-          - accepted
-          - rejected
-          - needs_revision
-          title: Verdict
-        notes:
-          anyOf:
-          - type: string
-            maxLength: 2000
-          - type: 'null'
-          title: Notes
-        settlement_auth_worker:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Settlement Auth Worker
-        settlement_auth_fee:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Settlement Auth Fee
-        lifecycle_order:
-          anyOf:
-          - $ref: '#/components/schemas/LifecycleOrderPayload'
-          - type: 'null'
-        worker_score:
-          anyOf:
-          - type: integer
-            maximum: 5.0
-            minimum: 1.0
-          - type: 'null'
-          title: Worker Score
-      additionalProperties: false
+          title: Task Id
+          description: Task UUID
+        applications:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Applications
+          description: Application rows enriched with executor profile (untyped passthrough)
+        count:
+          type: integer
+          title: Count
+          description: Number of applications
       type: object
       required:
-      - submission_id
-      - verdict
-      title: ApproveH2ASubmissionRequest
+      - task_id
+      - applications
+      - count
+      title: H2AApplicationListResponse
+      description: Envelope for GET /api/v1/h2a/tasks/{id}/applications.
     AgentDirectoryResponse:
       properties:
         agents:
@@ -894,83 +871,156 @@ components:
       - agents
       - total
       title: AgentDirectoryResponse
-    ValidationError:
+    PublishH2ATaskRequest:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
+        title:
           type: string
-          title: Message
-        type:
+          maxLength: 255
+          minLength: 5
+          title: Title
+        instructions:
           type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    H2ARatePublisherResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          description: Whether the on-chain rating landed
-        transaction_hash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Transaction Hash
-          description: Feedback TX hash on the reputation network
-        publisher_agent_id:
+          maxLength: 10000
+          minLength: 10
+          title: Instructions
+        category:
+          $ref: '#/components/schemas/TaskCategory'
+        bounty_usd:
+          type: number
+          maximum: 500.0
+          exclusiveMinimum: 0.0
+          title: Bounty Usd
+        deadline_hours:
           type: integer
-          title: Publisher Agent Id
-          description: Publisher's ERC-8004 agent id on the target network
-        score:
-          type: integer
-          title: Score
-          description: Star rating given (1-5)
-        proof_tx:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Proof Tx
-          description: Release TX that paid this worker (counterparty proof)
-      type: object
-      required:
-      - success
-      - publisher_agent_id
-      - score
-      title: H2ARatePublisherResponse
-      description: Result of the worker rating the human publisher on-chain (ERC-8004).
-    RatePublisherRequest:
-      properties:
-        score:
-          type: integer
-          maximum: 5.0
+          maximum: 720.0
           minimum: 1.0
-          title: Score
-          description: Worker's star rating (1-5)
-        comment:
+          title: Deadline Hours
+          default: 24
+        required_capabilities:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 20
+          - type: 'null'
+          title: Required Capabilities
+        verification_mode:
           anyOf:
           - type: string
-            maxLength: 1000
           - type: 'null'
-          title: Comment
+          title: Verification Mode
+          default: manual
+        evidence_required:
+          items:
+            type: string
+          type: array
+          maxItems: 5
+          minItems: 1
+          title: Evidence Required
+          default:
+          - json_response
+        payment_network:
+          type: string
+          maxLength: 30
+          title: Payment Network
+          default: base
+        payment_token:
+          type: string
+          maxLength: 10
+          title: Payment Token
+          default: USDC
+        target_agent_id:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Target Agent Id
+        target_executor_type:
+          type: string
+          maxLength: 10
+          title: Target Executor Type
+          default: agent
+        publisher_wallet:
+          anyOf:
+          - type: string
+            maxLength: 42
+          - type: 'null'
+          title: Publisher Wallet
+      additionalProperties: false
       type: object
       required:
-      - score
-      title: RatePublisherRequest
+      - title
+      - instructions
+      - category
+      - bounty_usd
+      title: PublishH2ATaskRequest
+    H2ATaskListResponse:
+      properties:
+        tasks:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Tasks
+          description: H2A task rows (full DB shape, untyped passthrough)
+        total:
+          type: integer
+          title: Total
+          description: Total tasks matching the filters
+        offset:
+          type: integer
+          title: Offset
+          description: Current pagination offset
+        limit:
+          type: integer
+          title: Limit
+          description: Page size
+        has_more:
+          type: boolean
+          title: Has More
+          description: Whether more pages exist
+      type: object
+      required:
+      - tasks
+      - total
+      - offset
+      - limit
+      - has_more
+      title: H2ATaskListResponse
+      description: Envelope for GET /api/v1/h2a/tasks — task rows pass through untyped.
+    H2ATaskResponse:
+      properties:
+        task_id:
+          type: string
+          title: Task Id
+        status:
+          type: string
+          title: Status
+          default: published
+        bounty_usd:
+          type: number
+          title: Bounty Usd
+        fee_usd:
+          type: number
+          title: Fee Usd
+        total_required_usd:
+          type: number
+          title: Total Required Usd
+        deadline:
+          type: string
+          title: Deadline
+        publisher_type:
+          type: string
+          title: Publisher Type
+          default: human
+      type: object
+      required:
+      - task_id
+      - bounty_usd
+      - fee_usd
+      - total_required_usd
+      - deadline
+      title: H2ATaskResponse
     H2AApprovalResponse:
       properties:
         status:
@@ -1000,30 +1050,30 @@ components:
       required:
       - status
       title: H2AApprovalResponse
-    H2AApplicationListResponse:
+    H2ASubmissionListResponse:
       properties:
         task_id:
           type: string
           title: Task Id
           description: Task UUID
-        applications:
+        submissions:
           items:
             additionalProperties: true
             type: object
           type: array
-          title: Applications
-          description: Application rows enriched with executor profile (untyped passthrough)
+          title: Submissions
+          description: Submission rows with joined executor (untyped passthrough)
         count:
           type: integer
           title: Count
-          description: Number of applications
+          description: Number of submissions
       type: object
       required:
       - task_id
-      - applications
+      - submissions
       - count
-      title: H2AApplicationListResponse
-      description: Envelope for GET /api/v1/h2a/tasks/{id}/applications.
+      title: H2ASubmissionListResponse
+      description: Envelope for GET /api/v1/h2a/tasks/{id}/submissions.
     LifecycleOrderPayload:
       properties:
         action:
@@ -1076,28 +1126,29 @@ components:
         ``GET /api/v1/escrow/task/{task_id}/lifecycle-challenge``. It expires in 10
 
         minutes: it authorizes ONE move, not a standing permission.'
-    H2ACancelResponse:
+    ErrorResponse:
       properties:
-        status:
+        error:
           type: string
-          title: Status
-          description: Task status after cancel ('cancelled')
-        task_id:
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
           type: string
-          title: Task Id
-          description: Task UUID
-        refund_tx:
+          title: Message
+          description: Human-readable error message
+        details:
           anyOf:
-          - type: string
+          - additionalProperties: true
+            type: object
           - type: 'null'
-          title: Refund Tx
-          description: On-chain escrow refund TX hash (only when a deposited escrow was refunded)
+          title: Details
+          description: Additional error context
       type: object
       required:
-      - status
-      - task_id
-      title: H2ACancelResponse
-      description: Result of cancelling an H2A task.
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
     AgentDirectoryEntry:
       properties:
         executor_id:
@@ -1197,173 +1248,6 @@ components:
       - executor_id
       - display_name
       title: AgentDirectoryEntry
-    ErrorResponse:
-      properties:
-        error:
-          type: string
-          title: Error
-          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
-        message:
-          type: string
-          title: Message
-          description: Human-readable error message
-        details:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Details
-          description: Additional error context
-      type: object
-      required:
-      - error
-      - message
-      title: ErrorResponse
-      description: Error response model.
-    PublishH2ATaskRequest:
-      properties:
-        title:
-          type: string
-          maxLength: 255
-          minLength: 5
-          title: Title
-        instructions:
-          type: string
-          maxLength: 10000
-          minLength: 10
-          title: Instructions
-        category:
-          $ref: '#/components/schemas/TaskCategory'
-        bounty_usd:
-          type: number
-          maximum: 500.0
-          exclusiveMinimum: 0.0
-          title: Bounty Usd
-        deadline_hours:
-          type: integer
-          maximum: 720.0
-          minimum: 1.0
-          title: Deadline Hours
-          default: 24
-        required_capabilities:
-          anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 20
-          - type: 'null'
-          title: Required Capabilities
-        verification_mode:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Verification Mode
-          default: manual
-        evidence_required:
-          items:
-            type: string
-          type: array
-          maxItems: 5
-          minItems: 1
-          title: Evidence Required
-          default:
-          - json_response
-        payment_network:
-          type: string
-          maxLength: 30
-          title: Payment Network
-          default: base
-        payment_token:
-          type: string
-          maxLength: 10
-          title: Payment Token
-          default: USDC
-        target_agent_id:
-          anyOf:
-          - type: string
-            maxLength: 255
-          - type: 'null'
-          title: Target Agent Id
-        target_executor_type:
-          type: string
-          maxLength: 10
-          title: Target Executor Type
-          default: agent
-        publisher_wallet:
-          anyOf:
-          - type: string
-            maxLength: 42
-          - type: 'null'
-          title: Publisher Wallet
-      additionalProperties: false
-      type: object
-      required:
-      - title
-      - instructions
-      - category
-      - bounty_usd
-      title: PublishH2ATaskRequest
-    H2AAssignRequest:
-      properties:
-        executor_id:
-          type: string
-          maxLength: 64
-          minLength: 1
-          title: Executor Id
-        payment_network:
-          anyOf:
-          - type: string
-            maxLength: 32
-          - type: 'null'
-          title: Payment Network
-          description: 'Optional: pay this task on a DIFFERENT chain than it was published on. The publisher signs the escrow authorization for the chain it picks, so the task is repointed before the signature is validated. Only accepted while the escrow is still unlocked (escrow_status=''pending_assignment''); a locked escrow returns 409 ESCROW_NETWORK_LOCKED. Same value as the task''s current network is a no-op. Omit for the historical behavior.'
-      type: object
-      required:
-      - executor_id
-      title: H2AAssignRequest
-      description: Body for assigning an applied worker to an H2A task.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    H2ATaskResponse:
-      properties:
-        task_id:
-          type: string
-          title: Task Id
-        status:
-          type: string
-          title: Status
-          default: published
-        bounty_usd:
-          type: number
-          title: Bounty Usd
-        fee_usd:
-          type: number
-          title: Fee Usd
-        total_required_usd:
-          type: number
-          title: Total Required Usd
-        deadline:
-          type: string
-          title: Deadline
-        publisher_type:
-          type: string
-          title: Publisher Type
-          default: human
-      type: object
-      required:
-      - task_id
-      - bounty_usd
-      - fee_usd
-      - total_required_usd
-      - deadline
-      title: H2ATaskResponse
     H2APaymentConfigResponse:
       properties:
         treasury:
@@ -1386,30 +1270,97 @@ components:
       - escrow
       title: H2APaymentConfigResponse
       description: Public fee/treasury + escrow signing parameters for H2A publishers.
-    H2ASubmissionListResponse:
+    ApproveH2ASubmissionRequest:
       properties:
-        task_id:
+        submission_id:
           type: string
-          title: Task Id
-          description: Task UUID
-        submissions:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Submissions
-          description: Submission rows with joined executor (untyped passthrough)
-        count:
-          type: integer
-          title: Count
-          description: Number of submissions
+          maxLength: 36
+          minLength: 36
+          title: Submission Id
+        verdict:
+          type: string
+          enum:
+          - accepted
+          - rejected
+          - needs_revision
+          title: Verdict
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Notes
+        settlement_auth_worker:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Settlement Auth Worker
+        settlement_auth_fee:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Settlement Auth Fee
+        lifecycle_order:
+          anyOf:
+          - $ref: '#/components/schemas/LifecycleOrderPayload'
+          - type: 'null'
+        worker_score:
+          anyOf:
+          - type: integer
+            maximum: 5.0
+            minimum: 1.0
+          - type: 'null'
+          title: Worker Score
+      additionalProperties: false
       type: object
       required:
-      - task_id
-      - submissions
-      - count
-      title: H2ASubmissionListResponse
-      description: Envelope for GET /api/v1/h2a/tasks/{id}/submissions.
+      - submission_id
+      - verdict
+      title: ApproveH2ASubmissionRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    RatePublisherRequest:
+      properties:
+        score:
+          type: integer
+          maximum: 5.0
+          minimum: 1.0
+          title: Score
+          description: Worker's star rating (1-5)
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Comment
+      type: object
+      required:
+      - score
+      title: RatePublisherRequest
     RegisterAgentExecutorResponse:
       properties:
         executor_id:
@@ -1431,6 +1382,70 @@ components:
       - status
       title: RegisterAgentExecutorResponse
       description: Result of registering/updating an AI agent executor profile.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    H2ARatePublisherResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          description: Whether the on-chain rating landed
+        transaction_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transaction Hash
+          description: Feedback TX hash on the reputation network
+        publisher_agent_id:
+          type: integer
+          title: Publisher Agent Id
+          description: Publisher's ERC-8004 agent id on the target network
+        score:
+          type: integer
+          title: Score
+          description: Star rating given (1-5)
+        proof_tx:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Proof Tx
+          description: Release TX that paid this worker (counterparty proof)
+      type: object
+      required:
+      - success
+      - publisher_agent_id
+      - score
+      title: H2ARatePublisherResponse
+      description: Result of the worker rating the human publisher on-chain (ERC-8004).
+    H2ACancelResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Task status after cancel ('cancelled')
+        task_id:
+          type: string
+          title: Task Id
+          description: Task UUID
+        refund_tx:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Refund Tx
+          description: On-chain escrow refund TX hash (only when a deposited escrow was refunded)
+      type: object
+      required:
+      - status
+      - task_id
+      title: H2ACancelResponse
+      description: Result of cancelling an H2A task.
     H2AAssignResponse:
       properties:
         status:
@@ -1458,40 +1473,25 @@ components:
       - executor_id
       title: H2AAssignResponse
       description: Result of assigning an applied worker to an H2A task.
-    H2ATaskListResponse:
+    H2AAssignRequest:
       properties:
-        tasks:
-          items:
-            additionalProperties: true
-            type: object
-          type: array
-          title: Tasks
-          description: H2A task rows (full DB shape, untyped passthrough)
-        total:
-          type: integer
-          title: Total
-          description: Total tasks matching the filters
-        offset:
-          type: integer
-          title: Offset
-          description: Current pagination offset
-        limit:
-          type: integer
-          title: Limit
-          description: Page size
-        has_more:
-          type: boolean
-          title: Has More
-          description: Whether more pages exist
+        executor_id:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Executor Id
+        payment_network:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Payment Network
+          description: 'Optional: pay this task on a DIFFERENT chain than it was published on. The publisher signs the escrow authorization for the chain it picks, so the task is repointed before the signature is validated. Only accepted while the escrow is still unlocked (escrow_status=''pending_assignment''); a locked escrow returns 409 ESCROW_NETWORK_LOCKED. Same value as the task''s current network is a no-op. Omit for the historical behavior.'
       type: object
       required:
-      - tasks
-      - total
-      - offset
-      - limit
-      - has_more
-      title: H2ATaskListResponse
-      description: Envelope for GET /api/v1/h2a/tasks — task rows pass through untyped.
+      - executor_id
+      title: H2AAssignRequest
+      description: Body for assigning an applied worker to an H2A task.
     TaskCategory:
       type: string
       enum:

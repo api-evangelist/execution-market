@@ -907,6 +907,238 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    CrossChainReputationResponse:
+      properties:
+        wallet_address:
+          type: string
+          title: Wallet Address
+        final_score:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Final Score
+          description: describe.net's global_score (mean of per-chain means, 0-100). NULL = no eligible ratings in the index, or this wallet was never reconciled — NEVER 0. Read retrieved_at to tell the two apart.
+        source:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source
+          description: '''describenet'' when a score is served. NULL when there is none. There is no third value: EM never authors this number.'
+        policy_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Policy Version
+          description: Provider policy that produced the score. Scores under different policy versions are not comparable.
+        refreshed_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Refreshed At
+          description: When the PROVIDER's materialized view was refreshed (index freshness). NULL = not recorded, never 'just now'.
+        retrieved_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Retrieved At
+          description: When EM fetched the snapshot — the AGE every surface must display next to the score. NULL = never reconciled.
+        chain_count:
+          type: integer
+          title: Chain Count
+          description: Chains that contributed a score (len(per_chain))
+        total_reviews:
+          type: integer
+          title: Total Reviews
+          description: Eligible reviews across all chains, as reported by describe.net
+        chains_with_identity:
+          type: integer
+          title: Chains With Identity
+          description: Chains where the index sees at least one ERC-8004 identity
+        chains_skipped:
+          type: integer
+          title: Chains Skipped
+          description: Chains with identity but no eligible ratings (excluded from per_chain — absence, not a 0)
+        per_chain:
+          additionalProperties:
+            $ref: '#/components/schemas/CrossChainPerChain'
+          type: object
+          title: Per Chain
+          description: 'Per-chain breakdown, scored chains only: {network: {agent_ids, average, review_count, distinct_raters}}'
+        per_chain_retrieved_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Per Chain Retrieved At
+          description: Age of the BREAKDOWN specifically. Normally identical to retrieved_at (both come from one reconciler fetch); it can lag by a cycle when the best-effort snapshot insert failed after the aggregate was already mirrored. Disclosed instead of hidden.
+      type: object
+      required:
+      - wallet_address
+      - chain_count
+      - total_reviews
+      - chains_with_identity
+      - chains_skipped
+      title: CrossChainReputationResponse
+      description: 'A wallet''s multi-chain reputation as describe.net computed it.
+
+
+        Every number below is served from EM''s snapshot of the provider''s answer.
+
+        EM aggregates nothing here.'
+    WorkerFeedbackRequest:
+      properties:
+        score:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Score
+          description: Rating score from 0 (worst) to 100 (best)
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Comment
+          description: Optional comment about the interaction
+        proof_tx:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Proof Tx
+          description: Transaction hash of payment (for verified feedback)
+        task_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+          title: Task Id
+          description: Task ID for context
+        worker_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Worker Address
+          description: Worker's wallet address
+      type: object
+      required:
+      - score
+      - task_id
+      title: WorkerFeedbackRequest
+      description: Request to rate a worker after task completion.
+    PrepareFeedbackRequest:
+      properties:
+        agent_id:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Agent Id
+          description: Target agent's ERC-8004 token ID. Omit for H2H tasks — the human publisher's identity is resolved from the task.
+        task_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+          title: Task Id
+          description: Task ID for context
+        score:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Score
+          description: Rating score from 0 (worst) to 100 (best)
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Comment
+          description: Optional comment about the interaction
+        worker_address:
+          anyOf:
+          - type: string
+            maxLength: 42
+            minLength: 42
+          - type: 'null'
+          title: Worker Address
+          description: Worker's wallet address. Omit to resolve it server-side from the task's assigned executor (else the authenticated caller's wallet). An explicit value is still validated against the assignment.
+      type: object
+      required:
+      - task_id
+      - score
+      title: PrepareFeedbackRequest
+      description: Request to prepare on-chain feedback parameters for worker signing.
+    PrepareFeedbackResponse:
+      properties:
+        prepare_id:
+          type: string
+          title: Prepare Id
+          description: Unique ID to confirm feedback later
+        contract_address:
+          type: string
+          title: Contract Address
+        chain_id:
+          type: integer
+          title: Chain Id
+        agent_id:
+          type: integer
+          title: Agent Id
+        value:
+          type: integer
+          title: Value
+        value_decimals:
+          type: integer
+          title: Value Decimals
+          default: 0
+        tag1:
+          type: string
+          title: Tag1
+        tag2:
+          type: string
+          title: Tag2
+        endpoint:
+          type: string
+          title: Endpoint
+        feedback_uri:
+          type: string
+          title: Feedback Uri
+        feedback_hash:
+          type: string
+          title: Feedback Hash
+          description: 0x-prefixed keccak256 hex
+        estimated_gas:
+          type: integer
+          title: Estimated Gas
+          default: 200000
+        reputation_network_requested:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Requested
+          description: 'The chain this rating was SUPPOSED to land on: the ratee''s explicit choice if they made one, otherwise the task''s payment chain. The payment-chain default applies to every network, not just Solana — an arbitrum-paid task with no choice now seals on arbitrum, where before 2026-09-10 it sealed on base.'
+        reputation_network_used:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Used
+          description: The chain it actually landed on. Equal to `reputation_network_requested` unless something forced a change — in which case `reputation_network_fallback_reason` says what.
+        reputation_network_fallback_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Fallback Reason
+          description: 'Why the rating changed chain, or null when it did not: `no_identity_on_chain` (the ratee holds no ERC-8004 identity there and one could not be minted), `chain_not_capable` (the chain cannot carry ERC-8004 reputation we can author), `chain_guard` (the agent id we hold lives on another chain and ids are per-chain), `pref_disabled` (cross-chain reputation is switched off). Until 2026-09-10 this was silent: 18 ratings of Solana-paid work sealed on Base and every response said only `success: true`.'
+      type: object
+      required:
+      - prepare_id
+      - contract_address
+      - chain_id
+      - agent_id
+      - value
+      - tag1
+      - tag2
+      - endpoint
+      - feedback_uri
+      - feedback_hash
+      title: PrepareFeedbackResponse
+      description: Response with parameters for giveFeedback() on-chain call.
     IdentityResponse:
       properties:
         agent_id:
@@ -957,182 +1189,7 @@ components:
       - network
       title: IdentityResponse
       description: Agent identity from ERC-8004 registry.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    OwedRatingItem:
-      properties:
-        task_id:
-          type: string
-          title: Task Id
-        title:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Title
-        publisher_wallet:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Publisher Wallet
-          description: task.agent_id — the publisher this worker still owes a rating
-        publisher_agent_id:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Publisher Agent Id
-          description: task.erc8004_agent_id if already known
-        bounty_usd:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Bounty Usd
-        completed_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Completed At
-      type: object
-      required:
-      - task_id
-      title: OwedRatingItem
-    CrossChainPerChain:
-      properties:
-        agent_ids:
-          items:
-            type: string
-          type: array
-          title: Agent Ids
-          description: 'ERC-8004 ids this wallet owns on the chain (strings: ids are per-chain and not always numeric)'
-        average:
-          type: number
-          title: Average
-          description: describe.net's final_score for this chain (0-100). Never EM-computed.
-        review_count:
-          type: integer
-          title: Review Count
-          description: Eligible reviews counted on this chain
-        distinct_raters:
-          type: integer
-          title: Distinct Raters
-          description: Distinct raters behind review_count
-      type: object
-      required:
-      - average
-      - review_count
-      - distinct_raters
-      title: CrossChainPerChain
-      description: 'One chain of describe.net''s breakdown, verbatim from the snapshot.
-
-
-        Only chains that carry a real score appear in ``per_chain``. A chain with
-
-        an identity but no eligible ratings has ``final_score: null`` upstream and
-
-        is counted in ``chains_skipped`` instead of being rendered as a 0.'
-    PublisherReputationResponse:
-      properties:
-        publisher_key:
-          type: string
-          title: Publisher Key
-          description: 'Canonical publisher identity: lower(COALESCE(NULLIF(tasks.human_wallet,''''), tasks.agent_id)). Echoed back normalised, so a caller can tell which key answered.'
-        avg_score:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Avg Score
-          description: Average score 0-100. Null = no ratings, never 0.
-        rating_count:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Rating Count
-          description: How many ratings back the average. Null = no ratings.
-        rater_count:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Rater Count
-          description: Distinct workers who rated this publisher.
-        signed_count:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Signed Count
-          description: How many are authored on-chain by the rater itself (EIP-7702 signed rail) rather than relayed under our key.
-        last_rated_at:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Last Rated At
-          description: Timestamp of the most recent rating.
-        executor_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Executor Id
-          description: 'The publisher''s executors row when it has one. Null is normal: 3 publishers holding 8.9% of all opinions — including the #1 by volume — have no executors row.'
-      type: object
-      required:
-      - publisher_key
-      title: PublisherReputationResponse
-      description: 'What a PUBLISHER received from the workers it hired (migration 205).
-
-
-        Flat, not a wrapper: here the key IS the subject, so a caller that asked
-
-        about one publisher reads ``avg_score`` directly. When that publisher has
-
-        no ratings every field except ``publisher_key`` is ``null`` — HTTP 200,
-
-        never 404, and **never a zero**. A 0 on a 0-100 scale reads as "the worst
-
-        publisher on the market", which is not a claim we can make about someone
-
-        nobody has rated (INC-2026-08-26).'
-    MetadataEntry:
-      properties:
-        key:
-          type: string
-          maxLength: 64
-          minLength: 1
-          title: Key
-        value:
-          type: string
-          maxLength: 256
-          minLength: 1
-          title: Value
-      type: object
-      required:
-      - key
-      - value
-      title: MetadataEntry
-      description: Key-value metadata for agent registration.
-    WorkerFeedbackRequest:
+    AgentFeedbackRequest:
       properties:
         score:
           type: integer
@@ -1153,24 +1210,67 @@ components:
           - type: 'null'
           title: Proof Tx
           description: Transaction hash of payment (for verified feedback)
+        agent_id:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Agent Id
+          description: Agent's ERC-8004 token ID. Omit for H2H/KK tasks — the publisher's identity is resolved from the task.
         task_id:
           type: string
           maxLength: 36
           minLength: 36
           title: Task Id
           description: Task ID for context
-        worker_address:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Worker Address
-          description: Worker's wallet address
       type: object
       required:
       - score
       - task_id
-      title: WorkerFeedbackRequest
-      description: Request to rate a worker after task completion.
+      title: AgentFeedbackRequest
+      description: Request for a worker to rate an agent.
+    ConfirmFeedbackResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+        transaction_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transaction Hash
+        network:
+          type: string
+          title: Network
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+        reputation_network_requested:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Requested
+          description: ALWAYS null on this endpoint. The chain was chosen at /reputation/prepare-feedback and that decision is not re-derivable here, so this reports nothing rather than repeating `reputation_network_used` back at you — a placeholder would occupy the place of the proof. Read it off the prepare response, which is also the one you signed against. Null means NOT RECORDED HERE, never 'nothing moved'.
+        reputation_network_used:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Used
+          description: The chain the confirmed transaction was signed for, read from the stored feedback document. This endpoint used to answer a constant instead, so a cross-chain rating confirmed as `base` while its tx lived somewhere else.
+        reputation_network_fallback_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Fallback Reason
+          description: 'ALWAYS null on this endpoint, for the same reason as `reputation_network_requested`: the fallback, if there was one, was decided and reported at prepare time.'
+      type: object
+      required:
+      - success
+      - network
+      title: ConfirmFeedbackResponse
+      description: Response after confirming feedback TX.
     RelaySubmitRequest:
       properties:
         task_id:
@@ -1247,134 +1347,119 @@ components:
       - signature
       title: RelaySubmitRequest
       description: Relay the signed rating. The on-chain author is the rater.
-    FeedbackResponse:
+    ValidationError:
       properties:
-        success:
-          type: boolean
-          title: Success
-        transaction_hash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Transaction Hash
-        feedback_index:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Feedback Index
-        network:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
           type: string
-          title: Network
-        error:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Error
-        reputation_network_requested:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Network Requested
-          description: 'The chain this rating was SUPPOSED to land on: the ratee''s explicit choice if they made one, otherwise the task''s payment chain. The payment-chain default applies to every network, not just Solana — an arbitrum-paid task with no choice now seals on arbitrum, where before 2026-09-10 it sealed on base.'
-        reputation_network_used:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Network Used
-          description: The chain it actually landed on. Equal to `reputation_network_requested` unless something forced a change — in which case `reputation_network_fallback_reason` says what.
-        reputation_network_fallback_reason:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Network Fallback Reason
-          description: 'Why the rating changed chain, or null when it did not: `no_identity_on_chain` (the ratee holds no ERC-8004 identity there and one could not be minted), `chain_not_capable` (the chain cannot carry ERC-8004 reputation we can author), `chain_guard` (the agent id we hold lives on another chain and ids are per-chain), `pref_disabled` (cross-chain reputation is switched off). Until 2026-09-10 this was silent: 18 ratings of Solana-paid work sealed on Base and every response said only `success: true`.'
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - success
-      - network
-      title: FeedbackResponse
-      description: Response after submitting feedback.
-    PrepareFeedbackRequest:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ConfirmFeedbackRequest:
       properties:
-        agent_id:
-          anyOf:
-          - type: integer
-            minimum: 1.0
-          - type: 'null'
-          title: Agent Id
-          description: Target agent's ERC-8004 token ID. Omit for H2H tasks — the human publisher's identity is resolved from the task.
+        prepare_id:
+          type: string
+          title: Prepare Id
+          description: prepare_id from prepare-feedback
+        tx_hash:
+          type: string
+          maxLength: 66
+          minLength: 66
+          title: Tx Hash
+          description: 0x-prefixed TX hash
         task_id:
           type: string
           maxLength: 36
           minLength: 36
           title: Task Id
           description: Task ID for context
-        score:
-          type: integer
-          maximum: 100.0
-          minimum: 0.0
-          title: Score
-          description: Rating score from 0 (worst) to 100 (best)
-        comment:
-          anyOf:
-          - type: string
-            maxLength: 1000
-          - type: 'null'
-          title: Comment
-          description: Optional comment about the interaction
-        worker_address:
-          anyOf:
-          - type: string
-            maxLength: 42
-            minLength: 42
-          - type: 'null'
-          title: Worker Address
-          description: Worker's wallet address. Omit to resolve it server-side from the task's assigned executor (else the authenticated caller's wallet). An explicit value is still validated against the assignment.
       type: object
       required:
+      - prepare_id
+      - tx_hash
       - task_id
-      - score
-      title: PrepareFeedbackRequest
-      description: Request to prepare on-chain feedback parameters for worker signing.
-    RelayPrepareRequest:
+      title: ConfirmFeedbackRequest
+      description: Request to confirm that the worker signed the feedback TX.
+    CrossChainPerChain:
       properties:
-        task_id:
-          type: string
-          maxLength: 36
-          minLength: 36
-          title: Task Id
-        direction:
-          type: string
-          title: Direction
-          description: publisher_rates_executor | executor_rates_publisher. The role NAMES (buyer/seller vs requester/executor) are resolved from the task.
-        score:
+        agent_ids:
+          items:
+            type: string
+          type: array
+          title: Agent Ids
+          description: 'ERC-8004 ids this wallet owns on the chain (strings: ids are per-chain and not always numeric)'
+        average:
+          type: number
+          title: Average
+          description: describe.net's final_score for this chain (0-100). Never EM-computed.
+        review_count:
           type: integer
-          maximum: 100.0
-          minimum: 0.0
-          title: Score
-        comment:
-          anyOf:
-          - type: string
-            maxLength: 2000
-          - type: 'null'
-          title: Comment
+          title: Review Count
+          description: Eligible reviews counted on this chain
+        distinct_raters:
+          type: integer
+          title: Distinct Raters
+          description: Distinct raters behind review_count
       type: object
       required:
-      - task_id
-      - direction
-      - score
-      title: RelayPrepareRequest
-      description: Ask what this rater must sign to author a rating.
-    ConfirmFeedbackResponse:
+      - average
+      - review_count
+      - distinct_raters
+      title: CrossChainPerChain
+      description: 'One chain of describe.net''s breakdown, verbatim from the snapshot.
+
+
+        Only chains that carry a real score appear in ``per_chain``. A chain with
+
+        an identity but no eligible ratings has ``final_score: null`` upstream and
+
+        is counted in ``chains_skipped`` instead of being rendered as a 0.'
+    RegisterAgentResponse:
       properties:
         success:
           type: boolean
           title: Success
-        transaction_hash:
+        agent_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Agent Id
+          description: Newly assigned ERC-8004 agent ID
+        transaction:
           anyOf:
           - type: string
           - type: 'null'
-          title: Transaction Hash
+          title: Transaction
+          description: Registration tx hash
+        transfer_transaction:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transfer Transaction
+          description: NFT transfer tx hash (if recipient specified)
+        owner:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Owner
         network:
           type: string
           title: Network
@@ -1383,30 +1468,38 @@ components:
           - type: string
           - type: 'null'
           title: Error
-        reputation_network_requested:
+        message:
           anyOf:
           - type: string
           - type: 'null'
-          title: Reputation Network Requested
-          description: ALWAYS null on this endpoint. The chain was chosen at /reputation/prepare-feedback and that decision is not re-derivable here, so this reports nothing rather than repeating `reputation_network_used` back at you — a placeholder would occupy the place of the proof. Read it off the prepare response, which is also the one you signed against. Null means NOT RECORDED HERE, never 'nothing moved'.
-        reputation_network_used:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Network Used
-          description: The chain the confirmed transaction was signed for, read from the stored feedback document. This endpoint used to answer a constant instead, so a cross-chain rating confirmed as `base` while its tx lived somewhere else.
-        reputation_network_fallback_reason:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Network Fallback Reason
-          description: 'ALWAYS null on this endpoint, for the same reason as `reputation_network_requested`: the fallback, if there was one, was decided and reported at prepare time.'
+          title: Message
+          description: Human-readable note (e.g. identity already existed, no mint)
       type: object
       required:
       - success
       - network
-      title: ConfirmFeedbackResponse
-      description: Response after confirming feedback TX.
+      title: RegisterAgentResponse
+      description: Response from agent registration.
+    RatedStatusResponse:
+      properties:
+        rated:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          type: object
+          title: Rated
+          description: task_id -> directions already rated. A direction is listed only when its on-chain tx is persisted; a row without a tx means the write failed or is pending and the task is still rateable.
+        unknown:
+          items:
+            type: string
+          type: array
+          title: Unknown
+          description: Task ids with no rating record at all — safe to rate.
+      type: object
+      required:
+      - rated
+      title: RatedStatusResponse
     RegisterAgentRequest:
       properties:
         network:
@@ -1440,80 +1533,6 @@ components:
       - agent_uri
       title: RegisterAgentRequest
       description: Request to register a new agent on ERC-8004 (gasless).
-    PrepareFeedbackResponse:
-      properties:
-        prepare_id:
-          type: string
-          title: Prepare Id
-          description: Unique ID to confirm feedback later
-        contract_address:
-          type: string
-          title: Contract Address
-        chain_id:
-          type: integer
-          title: Chain Id
-        agent_id:
-          type: integer
-          title: Agent Id
-        value:
-          type: integer
-          title: Value
-        value_decimals:
-          type: integer
-          title: Value Decimals
-          default: 0
-        tag1:
-          type: string
-          title: Tag1
-        tag2:
-          type: string
-          title: Tag2
-        endpoint:
-          type: string
-          title: Endpoint
-        feedback_uri:
-          type: string
-          title: Feedback Uri
-        feedback_hash:
-          type: string
-          title: Feedback Hash
-          description: 0x-prefixed keccak256 hex
-        estimated_gas:
-          type: integer
-          title: Estimated Gas
-          default: 200000
-        reputation_network_requested:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Network Requested
-          description: 'The chain this rating was SUPPOSED to land on: the ratee''s explicit choice if they made one, otherwise the task''s payment chain. The payment-chain default applies to every network, not just Solana — an arbitrum-paid task with no choice now seals on arbitrum, where before 2026-09-10 it sealed on base.'
-        reputation_network_used:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Network Used
-          description: The chain it actually landed on. Equal to `reputation_network_requested` unless something forced a change — in which case `reputation_network_fallback_reason` says what.
-        reputation_network_fallback_reason:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Network Fallback Reason
-          description: 'Why the rating changed chain, or null when it did not: `no_identity_on_chain` (the ratee holds no ERC-8004 identity there and one could not be minted), `chain_not_capable` (the chain cannot carry ERC-8004 reputation we can author), `chain_guard` (the agent id we hold lives on another chain and ids are per-chain), `pref_disabled` (cross-chain reputation is switched off). Until 2026-09-10 this was silent: 18 ratings of Solana-paid work sealed on Base and every response said only `success: true`.'
-      type: object
-      required:
-      - prepare_id
-      - contract_address
-      - chain_id
-      - agent_id
-      - value
-      - tag1
-      - tag2
-      - endpoint
-      - feedback_uri
-      - feedback_hash
-      title: PrepareFeedbackResponse
-      description: Response with parameters for giveFeedback() on-chain call.
     RegistrationStatusResponse:
       properties:
         registration_id:
@@ -1570,6 +1589,119 @@ components:
       - network
       title: RegistrationStatusResponse
       description: Status of an async (202) registration job.
+    ReputationResponse:
+      properties:
+        agent_id:
+          type: integer
+          title: Agent Id
+        count:
+          type: integer
+          title: Count
+        score:
+          type: number
+          title: Score
+          description: Reputation score (0-100)
+        network:
+          type: string
+          title: Network
+      type: object
+      required:
+      - agent_id
+      - count
+      - score
+      - network
+      title: ReputationResponse
+      description: Reputation summary for an agent.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    RatedStatusRequest:
+      properties:
+        task_ids:
+          items:
+            type: string
+          type: array
+          maxItems: 500
+          minItems: 1
+          title: Task Ids
+          description: Task ids to check. Max 500 per call.
+      type: object
+      required:
+      - task_ids
+      title: RatedStatusRequest
+      description: Which of these tasks already carry a rating, and in which direction.
+    FeedbackResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+        transaction_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transaction Hash
+        feedback_index:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Feedback Index
+        network:
+          type: string
+          title: Network
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+        reputation_network_requested:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Requested
+          description: 'The chain this rating was SUPPOSED to land on: the ratee''s explicit choice if they made one, otherwise the task''s payment chain. The payment-chain default applies to every network, not just Solana — an arbitrum-paid task with no choice now seals on arbitrum, where before 2026-09-10 it sealed on base.'
+        reputation_network_used:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Used
+          description: The chain it actually landed on. Equal to `reputation_network_requested` unless something forced a change — in which case `reputation_network_fallback_reason` says what.
+        reputation_network_fallback_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Network Fallback Reason
+          description: 'Why the rating changed chain, or null when it did not: `no_identity_on_chain` (the ratee holds no ERC-8004 identity there and one could not be minted), `chain_not_capable` (the chain cannot carry ERC-8004 reputation we can author), `chain_guard` (the agent id we hold lives on another chain and ids are per-chain), `pref_disabled` (cross-chain reputation is switched off). Until 2026-09-10 this was silent: 18 ratings of Solana-paid work sealed on Base and every response said only `success: true`.'
+      type: object
+      required:
+      - success
+      - network
+      title: FeedbackResponse
+      description: Response after submitting feedback.
+    OwedRatingsResponse:
+      properties:
+        executor_id:
+          type: string
+          title: Executor Id
+        owed:
+          items:
+            $ref: '#/components/schemas/OwedRatingItem'
+          type: array
+          title: Owed
+        count:
+          type: integer
+          title: Count
+      type: object
+      required:
+      - executor_id
+      - owed
+      - count
+      title: OwedRatingsResponse
     RelayPrepareResponse:
       properties:
         digest:
@@ -1680,219 +1812,121 @@ components:
       - feedback_hash
       title: RelayPrepareResponse
       description: Everything the wallet needs, plus what submit must echo back verbatim.
-    RatedStatusRequest:
+    PublisherReputationResponse:
       properties:
-        task_ids:
-          items:
-            type: string
-          type: array
-          maxItems: 500
-          minItems: 1
-          title: Task Ids
-          description: Task ids to check. Max 500 per call.
-      type: object
-      required:
-      - task_ids
-      title: RatedStatusRequest
-      description: Which of these tasks already carry a rating, and in which direction.
-    OwedRatingsResponse:
-      properties:
-        executor_id:
+        publisher_key:
           type: string
-          title: Executor Id
-        owed:
-          items:
-            $ref: '#/components/schemas/OwedRatingItem'
-          type: array
-          title: Owed
-        count:
-          type: integer
-          title: Count
-      type: object
-      required:
-      - executor_id
-      - owed
-      - count
-      title: OwedRatingsResponse
-    RegisterAgentResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-        agent_id:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Agent Id
-          description: Newly assigned ERC-8004 agent ID
-        transaction:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Transaction
-          description: Registration tx hash
-        transfer_transaction:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Transfer Transaction
-          description: NFT transfer tx hash (if recipient specified)
-        owner:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Owner
-        network:
-          type: string
-          title: Network
-        error:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Error
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-          description: Human-readable note (e.g. identity already existed, no mint)
-      type: object
-      required:
-      - success
-      - network
-      title: RegisterAgentResponse
-      description: Response from agent registration.
-    ConfirmFeedbackRequest:
-      properties:
-        prepare_id:
-          type: string
-          title: Prepare Id
-          description: prepare_id from prepare-feedback
-        tx_hash:
-          type: string
-          maxLength: 66
-          minLength: 66
-          title: Tx Hash
-          description: 0x-prefixed TX hash
-        task_id:
-          type: string
-          maxLength: 36
-          minLength: 36
-          title: Task Id
-          description: Task ID for context
-      type: object
-      required:
-      - prepare_id
-      - tx_hash
-      - task_id
-      title: ConfirmFeedbackRequest
-      description: Request to confirm that the worker signed the feedback TX.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    CrossChainReputationResponse:
-      properties:
-        wallet_address:
-          type: string
-          title: Wallet Address
-        final_score:
+          title: Publisher Key
+          description: 'Canonical publisher identity: lower(COALESCE(NULLIF(tasks.human_wallet,''''), tasks.agent_id)). Echoed back normalised, so a caller can tell which key answered.'
+        avg_score:
           anyOf:
           - type: number
           - type: 'null'
-          title: Final Score
-          description: describe.net's global_score (mean of per-chain means, 0-100). NULL = no eligible ratings in the index, or this wallet was never reconciled — NEVER 0. Read retrieved_at to tell the two apart.
-        source:
+          title: Avg Score
+          description: Average score 0-100. Null = no ratings, never 0.
+        rating_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Rating Count
+          description: How many ratings back the average. Null = no ratings.
+        rater_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Rater Count
+          description: Distinct workers who rated this publisher.
+        signed_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Signed Count
+          description: How many are authored on-chain by the rater itself (EIP-7702 signed rail) rather than relayed under our key.
+        last_rated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Rated At
+          description: Timestamp of the most recent rating.
+        executor_id:
           anyOf:
           - type: string
           - type: 'null'
-          title: Source
-          description: '''describenet'' when a score is served. NULL when there is none. There is no third value: EM never authors this number.'
-        policy_version:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Policy Version
-          description: Provider policy that produced the score. Scores under different policy versions are not comparable.
-        refreshed_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Refreshed At
-          description: When the PROVIDER's materialized view was refreshed (index freshness). NULL = not recorded, never 'just now'.
-        retrieved_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Retrieved At
-          description: When EM fetched the snapshot — the AGE every surface must display next to the score. NULL = never reconciled.
-        chain_count:
-          type: integer
-          title: Chain Count
-          description: Chains that contributed a score (len(per_chain))
-        total_reviews:
-          type: integer
-          title: Total Reviews
-          description: Eligible reviews across all chains, as reported by describe.net
-        chains_with_identity:
-          type: integer
-          title: Chains With Identity
-          description: Chains where the index sees at least one ERC-8004 identity
-        chains_skipped:
-          type: integer
-          title: Chains Skipped
-          description: Chains with identity but no eligible ratings (excluded from per_chain — absence, not a 0)
-        per_chain:
-          additionalProperties:
-            $ref: '#/components/schemas/CrossChainPerChain'
-          type: object
-          title: Per Chain
-          description: 'Per-chain breakdown, scored chains only: {network: {agent_ids, average, review_count, distinct_raters}}'
-        per_chain_retrieved_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Per Chain Retrieved At
-          description: Age of the BREAKDOWN specifically. Normally identical to retrieved_at (both come from one reconciler fetch); it can lag by a cycle when the best-effort snapshot insert failed after the aggregate was already mirrored. Disclosed instead of hidden.
+          title: Executor Id
+          description: 'The publisher''s executors row when it has one. Null is normal: 3 publishers holding 8.9% of all opinions — including the #1 by volume — have no executors row.'
       type: object
       required:
-      - wallet_address
-      - chain_count
-      - total_reviews
-      - chains_with_identity
-      - chains_skipped
-      title: CrossChainReputationResponse
-      description: 'A wallet''s multi-chain reputation as describe.net computed it.
+      - publisher_key
+      title: PublisherReputationResponse
+      description: 'What a PUBLISHER received from the workers it hired (migration 205).
 
 
-        Every number below is served from EM''s snapshot of the provider''s answer.
+        Flat, not a wrapper: here the key IS the subject, so a caller that asked
 
-        EM aggregates nothing here.'
-    RatedStatusResponse:
+        about one publisher reads ``avg_score`` directly. When that publisher has
+
+        no ratings every field except ``publisher_key`` is ``null`` — HTTP 200,
+
+        never 404, and **never a zero**. A 0 on a 0-100 scale reads as "the worst
+
+        publisher on the market", which is not a claim we can make about someone
+
+        nobody has rated (INC-2026-08-26).'
+    MetadataEntry:
       properties:
-        rated:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          type: object
-          title: Rated
-          description: task_id -> directions already rated. A direction is listed only when its on-chain tx is persisted; a row without a tx means the write failed or is pending and the task is still rateable.
-        unknown:
-          items:
-            type: string
-          type: array
-          title: Unknown
-          description: Task ids with no rating record at all — safe to rate.
+        key:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Key
+        value:
+          type: string
+          maxLength: 256
+          minLength: 1
+          title: Value
       type: object
       required:
-      - rated
-      title: RatedStatusResponse
+      - key
+      - value
+      title: MetadataEntry
+      description: Key-value metadata for agent registration.
+    OwedRatingItem:
+      properties:
+        task_id:
+          type: string
+          title: Task Id
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        publisher_wallet:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Publisher Wallet
+          description: task.agent_id — the publisher this worker still owes a rating
+        publisher_agent_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Publisher Agent Id
+          description: task.erc8004_agent_id if already known
+        bounty_usd:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Bounty Usd
+        completed_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Completed At
+      type: object
+      required:
+      - task_id
+      title: OwedRatingItem
     ERC8004InfoResponse:
       properties:
         available:
@@ -1921,69 +1955,35 @@ components:
       - contracts
       title: ERC8004InfoResponse
       description: ERC-8004 integration status and info.
-    ReputationResponse:
+    RelayPrepareRequest:
       properties:
-        agent_id:
-          type: integer
-          title: Agent Id
-        count:
-          type: integer
-          title: Count
-        score:
-          type: number
-          title: Score
-          description: Reputation score (0-100)
-        network:
-          type: string
-          title: Network
-      type: object
-      required:
-      - agent_id
-      - count
-      - score
-      - network
-      title: ReputationResponse
-      description: Reputation summary for an agent.
-    AgentFeedbackRequest:
-      properties:
-        score:
-          type: integer
-          maximum: 100.0
-          minimum: 0.0
-          title: Score
-          description: Rating score from 0 (worst) to 100 (best)
-        comment:
-          anyOf:
-          - type: string
-            maxLength: 1000
-          - type: 'null'
-          title: Comment
-          description: Optional comment about the interaction
-        proof_tx:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Proof Tx
-          description: Transaction hash of payment (for verified feedback)
-        agent_id:
-          anyOf:
-          - type: integer
-            minimum: 1.0
-          - type: 'null'
-          title: Agent Id
-          description: Agent's ERC-8004 token ID. Omit for H2H/KK tasks — the publisher's identity is resolved from the task.
         task_id:
           type: string
           maxLength: 36
           minLength: 36
           title: Task Id
-          description: Task ID for context
+        direction:
+          type: string
+          title: Direction
+          description: publisher_rates_executor | executor_rates_publisher. The role NAMES (buyer/seller vs requester/executor) are resolved from the task.
+        score:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Score
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Comment
       type: object
       required:
-      - score
       - task_id
-      title: AgentFeedbackRequest
-      description: Request for a worker to rate an agent.
+      - direction
+      - score
+      title: RelayPrepareRequest
+      description: Ask what this rater must sign to author a rating.
   securitySchemes:
     erc8128:
       type: apiKey

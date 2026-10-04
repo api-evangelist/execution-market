@@ -461,6 +461,31 @@ components:
       - network
       title: BalanceResponse
       description: Merchant balance in escrow.
+    ReleaseRequest:
+      properties:
+        deposit_id:
+          type: string
+          maxLength: 66
+          minLength: 64
+          title: Deposit Id
+          description: Deposit ID (bytes32 hex, with or without 0x prefix)
+        worker_address:
+          type: string
+          maxLength: 42
+          minLength: 40
+          title: Worker Address
+          description: Worker's wallet address
+        amount:
+          type: string
+          title: Amount
+          description: Amount to release in USDC (e.g., '10.00')
+      type: object
+      required:
+      - deposit_id
+      - worker_address
+      - amount
+      title: ReleaseRequest
+      description: Request to release funds from escrow.
     ReleaseResponse:
       properties:
         success:
@@ -499,70 +524,18 @@ components:
       - amount
       title: ReleaseResponse
       description: Result of release operation.
-    ValidationError:
+    PaymentExtensionResponse:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
+        refund:
+          additionalProperties: true
           type: object
-          title: Context
+          title: Refund
+          description: Refund extension configuration for x402 payment payloads
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    RefundResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          description: Whether the refund was successful
-        tx_hash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tx Hash
-          description: Transaction hash of the refund
-        deposit_id:
-          type: string
-          title: Deposit Id
-          description: Deposit ID that was refunded
-        payer:
-          type: string
-          title: Payer
-          description: Agent address that received the refund
-        amount:
-          type: string
-          title: Amount
-          description: Amount refunded in USDC
-        error:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Error
-          description: Error message if refund failed
-      type: object
-      required:
-      - success
-      - deposit_id
-      - payer
-      - amount
-      title: RefundResponse
-      description: Result of refund operation.
+      - refund
+      title: PaymentExtensionResponse
+      description: x402r payment extension for agents.
     EscrowConfigResponse:
       properties:
         available:
@@ -618,43 +591,32 @@ components:
       - deposit_id
       title: RefundRequest
       description: Request to refund funds to original payer.
-    PaymentExtensionResponse:
+    ValidationError:
       properties:
-        refund:
-          additionalProperties: true
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
           type: object
-          title: Refund
-          description: Refund extension configuration for x402 payment payloads
+          title: Context
       type: object
       required:
-      - refund
-      title: PaymentExtensionResponse
-      description: x402r payment extension for agents.
-    ReleaseRequest:
-      properties:
-        deposit_id:
-          type: string
-          maxLength: 66
-          minLength: 64
-          title: Deposit Id
-          description: Deposit ID (bytes32 hex, with or without 0x prefix)
-        worker_address:
-          type: string
-          maxLength: 42
-          minLength: 40
-          title: Worker Address
-          description: Worker's wallet address
-        amount:
-          type: string
-          title: Amount
-          description: Amount to release in USDC (e.g., '10.00')
-      type: object
-      required:
-      - deposit_id
-      - worker_address
-      - amount
-      title: ReleaseRequest
-      description: Request to release funds from escrow.
+      - loc
+      - msg
+      - type
+      title: ValidationError
     DepositResponse:
       properties:
         deposit_id:
@@ -705,6 +667,44 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    RefundResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          description: Whether the refund was successful
+        tx_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tx Hash
+          description: Transaction hash of the refund
+        deposit_id:
+          type: string
+          title: Deposit Id
+          description: Deposit ID that was refunded
+        payer:
+          type: string
+          title: Payer
+          description: Agent address that received the refund
+        amount:
+          type: string
+          title: Amount
+          description: Amount refunded in USDC
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+          description: Error message if refund failed
+      type: object
+      required:
+      - success
+      - deposit_id
+      - payer
+      - amount
+      title: RefundResponse
+      description: Result of refund operation.
     LifecycleOrderRequest:
       properties:
         action:

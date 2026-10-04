@@ -241,88 +241,6 @@ components:
       additionalProperties: false
       type: object
       title: WebhookUpdateRequest
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    WebhookResponse:
-      properties:
-        webhook_id:
-          type: string
-          title: Webhook Id
-        owner_id:
-          type: string
-          title: Owner Id
-        url:
-          type: string
-          title: Url
-        events:
-          items:
-            type: string
-          type: array
-          title: Events
-        description:
-          type: string
-          title: Description
-        status:
-          type: string
-          title: Status
-        created_at:
-          type: string
-          title: Created At
-        updated_at:
-          type: string
-          title: Updated At
-        last_triggered_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Last Triggered At
-        failure_count:
-          type: integer
-          title: Failure Count
-          default: 0
-        total_deliveries:
-          type: integer
-          title: Total Deliveries
-          default: 0
-        successful_deliveries:
-          type: integer
-          title: Successful Deliveries
-          default: 0
-      type: object
-      required:
-      - webhook_id
-      - owner_id
-      - url
-      - events
-      - description
-      - status
-      - created_at
-      - updated_at
-      title: WebhookResponse
     WebhookCreateResponse:
       properties:
         webhook_id:
@@ -384,6 +302,32 @@ components:
       - updated_at
       - secret
       title: WebhookCreateResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
     HTTPValidationError:
       properties:
         detail:
@@ -393,6 +337,62 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    WebhookResponse:
+      properties:
+        webhook_id:
+          type: string
+          title: Webhook Id
+        owner_id:
+          type: string
+          title: Owner Id
+        url:
+          type: string
+          title: Url
+        events:
+          items:
+            type: string
+          type: array
+          title: Events
+        description:
+          type: string
+          title: Description
+        status:
+          type: string
+          title: Status
+        created_at:
+          type: string
+          title: Created At
+        updated_at:
+          type: string
+          title: Updated At
+        last_triggered_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Triggered At
+        failure_count:
+          type: integer
+          title: Failure Count
+          default: 0
+        total_deliveries:
+          type: integer
+          title: Total Deliveries
+          default: 0
+        successful_deliveries:
+          type: integer
+          title: Successful Deliveries
+          default: 0
+      type: object
+      required:
+      - webhook_id
+      - owner_id
+      - url
+      - events
+      - description
+      - status
+      - created_at
+      - updated_at
+      title: WebhookResponse
     WebhookCreateRequest:
       properties:
         url:

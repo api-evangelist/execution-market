@@ -358,175 +358,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    SellerReputation:
-      properties:
-        reputation:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Reputation
-          description: Seller reputation, 0-100. describe.net's snapshot when they have one (see `reputation_source`), EM's own score otherwise. NULL when this seller has never been rated — which is NOT a zero. Read `has_reputation_history` before you read this number.
-        reputation_source:
-          type: string
-          title: Reputation Source
-          description: '`describenet` when the score above is describe.net''s snapshot — and only then may a client show the ''Powered by describe.net'' credit and deep-link to them. `internal` = EM''s own score, credited to nobody.'
-          default: internal
-        reputation_retrieved_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reputation Retrieved At
-          description: 'When EM fetched the describe.net snapshot (ISO-8601), i.e. the AGE of `reputation`. NULL for internal scores: an internal number has no snapshot age, and inventing one would let a stale value pass for a fresh index read.'
-        reputation_caveats:
-          items:
-            type: string
-          type: array
-          title: Reputation Caveats
-          description: 'Advertencias que describe.net publica sobre el SUJETO de esta wallet (hoy: `burn-address`). No mueven el score ni filtran nada: dicen que el sujeto puede no ser una identidad. Vacio cuando no hay ninguna o cuando el score es interno.'
-        has_reputation_history:
-          type: boolean
-          title: Has Reputation History
-          description: False when nobody has ever rated this seller AND they have completed nothing — the cold-start case, where `reputation` is null on purpose. True means the score above is earned evidence, including an earned zero.
-          default: true
-        tasks_completed:
-          type: integer
-          title: Tasks Completed
-          description: Number of completed tasks by this seller
-        avg_rating:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Avg Rating
-          description: Average rating received (0-5 scale)
-      type: object
-      required:
-      - tasks_completed
-      title: SellerReputation
-      description: Read-only, public seller reputation surfaced on browse/detail.
-    UpdateServiceListingRequest:
-      properties:
-        availability:
-          anyOf:
-          - type: string
-            pattern: ^(active|paused)$
-          - type: 'null'
-          title: Availability
-          description: 'Listing availability: ''active'' (orderable) or ''paused'''
-        description:
-          anyOf:
-          - type: string
-            maxLength: 5000
-            minLength: 20
-          - type: 'null'
-          title: Description
-          description: Updated service description
-        unit_price_usd:
-          anyOf:
-          - type: number
-            maximum: 100.0
-            exclusiveMinimum: 0.0
-          - type: 'null'
-          title: Unit Price Usd
-          description: Updated price per order in USD
-        skills:
-          anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 20
-          - type: 'null'
-          title: Skills
-          description: Updated skills list (max 20 items, 50 chars each)
-        evidence_schema:
-          anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 5
-          - type: 'null'
-          title: Evidence Schema
-          description: Updated evidence types a delivery must include
-        accepted_networks:
-          anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 20
-            minItems: 1
-          - type: 'null'
-          title: Accepted Networks
-          description: Updated set of networks a BUYER may pay this listing on. Every entry must be escrow-capable (else HTTP 422); the list can never be emptied — a listing that accepts no network is unbuyable.
-      additionalProperties: false
-      type: object
-      title: UpdateServiceListingRequest
-      description: 'Request to update a service listing (owner-only). All fields optional;
-
-        only the provided fields change. ``availability`` toggles active|paused.'
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    OrderServiceRequest:
-      properties:
-        bounty_usd_override:
-          anyOf:
-          - type: number
-            exclusiveMinimum: 0.0
-          - type: 'null'
-          title: Bounty Usd Override
-          description: Optional explicit price confirmation. When present it MUST equal the listing unit_price_usd (else HTTP 422 price_mismatch); the listing price is authoritative in v1.
-        deadline_hours:
-          anyOf:
-          - type: integer
-            maximum: 720.0
-            minimum: 1.0
-          - type: 'null'
-          title: Deadline Hours
-          description: Hours from now until the order task deadline (1..720, default 24)
-        custom_instructions:
-          anyOf:
-          - type: string
-            maxLength: 2000
-          - type: 'null'
-          title: Custom Instructions
-          description: Extra buyer instructions appended to the listing description
-        payment_network:
-          anyOf:
-          - type: string
-            maxLength: 30
-          - type: 'null'
-          title: Payment Network
-          description: Network the BUYER pays on. Must be escrow-capable, enabled for payments, AND present in the listing's accepted_networks — else HTTP 422 with a code saying which of the three failed (NETWORK_NO_ESCROW | NETWORK_DISABLED | NETWORK_NOT_ACCEPTED). Omit to use the listing's own payment_network, falling back to the first accepted network that can still settle.
-      additionalProperties: false
-      type: object
-      title: OrderServiceRequest
-      description: 'Request to order a service listing (buyer-authenticated). This is the
-
-        only money-moving step — the buyer MUST carry an X-Payment-Auth header
-
-        (escrow authorization signed for the seller wallet as receiver).'
     JevSellerVeto:
       properties:
         sospechoso_jev:
@@ -597,84 +428,6 @@ components:
         No ``confidence`` is carried and none exists: the decisive question is a
 
         Noul, and the gate''s axis B is not measurable for this case at all.'
-    OrderServiceResponse:
-      properties:
-        task_id:
-          type: string
-          title: Task Id
-          description: UUID of the demand-side task created for the order
-        listing_id:
-          type: string
-          title: Listing Id
-          description: UUID of the ordered listing
-        seller_executor_id:
-          type: string
-          title: Seller Executor Id
-          description: Seller executor UUID (assigned worker)
-        bounty_usd:
-          type: number
-          title: Bounty Usd
-          description: Order amount in USD (the listing price)
-        escrow_status:
-          type: string
-          title: Escrow Status
-          description: '''locked'' (synchronous lock succeeded) or ''assigning'' (async lock in progress)'
-        payment_network:
-          type: string
-          title: Payment Network
-          description: Payment network for the order escrow
-        task_status:
-          type: string
-          title: Task Status
-          description: Task status after assignment ('accepted' or 'assigning')
-      type: object
-      required:
-      - task_id
-      - listing_id
-      - seller_executor_id
-      - bounty_usd
-      - escrow_status
-      - payment_network
-      - task_status
-      title: OrderServiceResponse
-      description: 'Result of ordering a service listing — mirrors the under-the-hood
-
-        escrowed demand-side task+assignment.'
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    TaskCategory:
-      type: string
-      enum:
-      - physical_presence
-      - knowledge_access
-      - human_authority
-      - simple_action
-      - digital_physical
-      - location_based
-      - verification
-      - social_proof
-      - data_collection
-      - sensory
-      - social
-      - proxy
-      - bureaucratic
-      - emergency
-      - creative
-      - data_processing
-      - api_integration
-      - content_generation
-      - code_execution
-      - research
-      - multi_step_workflow
-      title: TaskCategory
-      description: Categories of tasks that executors can complete.
     ServiceListingListResponse:
       properties:
         listings:
@@ -816,6 +569,103 @@ components:
         NO escrow and no funds move here — this is advertising only. The seller is
 
         bound to the authenticated caller server-side; there is no seller field.'
+    TaskCategory:
+      type: string
+      enum:
+      - physical_presence
+      - knowledge_access
+      - human_authority
+      - simple_action
+      - digital_physical
+      - location_based
+      - verification
+      - social_proof
+      - data_collection
+      - sensory
+      - social
+      - proxy
+      - bureaucratic
+      - emergency
+      - creative
+      - data_processing
+      - api_integration
+      - content_generation
+      - code_execution
+      - research
+      - multi_step_workflow
+      title: TaskCategory
+      description: Categories of tasks that executors can complete.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    SellerReputation:
+      properties:
+        reputation:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Reputation
+          description: Seller reputation, 0-100. describe.net's snapshot when they have one (see `reputation_source`), EM's own score otherwise. NULL when this seller has never been rated — which is NOT a zero. Read `has_reputation_history` before you read this number.
+        reputation_source:
+          type: string
+          title: Reputation Source
+          description: '`describenet` when the score above is describe.net''s snapshot — and only then may a client show the ''Powered by describe.net'' credit and deep-link to them. `internal` = EM''s own score, credited to nobody.'
+          default: internal
+        reputation_retrieved_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reputation Retrieved At
+          description: 'When EM fetched the describe.net snapshot (ISO-8601), i.e. the AGE of `reputation`. NULL for internal scores: an internal number has no snapshot age, and inventing one would let a stale value pass for a fresh index read.'
+        reputation_caveats:
+          items:
+            type: string
+          type: array
+          title: Reputation Caveats
+          description: 'Advertencias que describe.net publica sobre el SUJETO de esta wallet (hoy: `burn-address`). No mueven el score ni filtran nada: dicen que el sujeto puede no ser una identidad. Vacio cuando no hay ninguna o cuando el score es interno.'
+        has_reputation_history:
+          type: boolean
+          title: Has Reputation History
+          description: False when nobody has ever rated this seller AND they have completed nothing — the cold-start case, where `reputation` is null on purpose. True means the score above is earned evidence, including an earned zero.
+          default: true
+        tasks_completed:
+          type: integer
+          title: Tasks Completed
+          description: Number of completed tasks by this seller
+        avg_rating:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Rating
+          description: Average rating received (0-5 scale)
+      type: object
+      required:
+      - tasks_completed
+      title: SellerReputation
+      description: Read-only, public seller reputation surfaced on browse/detail.
     ServiceListingResponse:
       properties:
         id:
@@ -935,6 +785,156 @@ components:
       - created_at
       title: ServiceListingResponse
       description: A single service listing.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    OrderServiceResponse:
+      properties:
+        task_id:
+          type: string
+          title: Task Id
+          description: UUID of the demand-side task created for the order
+        listing_id:
+          type: string
+          title: Listing Id
+          description: UUID of the ordered listing
+        seller_executor_id:
+          type: string
+          title: Seller Executor Id
+          description: Seller executor UUID (assigned worker)
+        bounty_usd:
+          type: number
+          title: Bounty Usd
+          description: Order amount in USD (the listing price)
+        escrow_status:
+          type: string
+          title: Escrow Status
+          description: '''locked'' (synchronous lock succeeded) or ''assigning'' (async lock in progress)'
+        payment_network:
+          type: string
+          title: Payment Network
+          description: Payment network for the order escrow
+        task_status:
+          type: string
+          title: Task Status
+          description: Task status after assignment ('accepted' or 'assigning')
+      type: object
+      required:
+      - task_id
+      - listing_id
+      - seller_executor_id
+      - bounty_usd
+      - escrow_status
+      - payment_network
+      - task_status
+      title: OrderServiceResponse
+      description: 'Result of ordering a service listing — mirrors the under-the-hood
+
+        escrowed demand-side task+assignment.'
+    UpdateServiceListingRequest:
+      properties:
+        availability:
+          anyOf:
+          - type: string
+            pattern: ^(active|paused)$
+          - type: 'null'
+          title: Availability
+          description: 'Listing availability: ''active'' (orderable) or ''paused'''
+        description:
+          anyOf:
+          - type: string
+            maxLength: 5000
+            minLength: 20
+          - type: 'null'
+          title: Description
+          description: Updated service description
+        unit_price_usd:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Unit Price Usd
+          description: Updated price per order in USD
+        skills:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 20
+          - type: 'null'
+          title: Skills
+          description: Updated skills list (max 20 items, 50 chars each)
+        evidence_schema:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 5
+          - type: 'null'
+          title: Evidence Schema
+          description: Updated evidence types a delivery must include
+        accepted_networks:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 20
+            minItems: 1
+          - type: 'null'
+          title: Accepted Networks
+          description: Updated set of networks a BUYER may pay this listing on. Every entry must be escrow-capable (else HTTP 422); the list can never be emptied — a listing that accepts no network is unbuyable.
+      additionalProperties: false
+      type: object
+      title: UpdateServiceListingRequest
+      description: 'Request to update a service listing (owner-only). All fields optional;
+
+        only the provided fields change. ``availability`` toggles active|paused.'
+    OrderServiceRequest:
+      properties:
+        bounty_usd_override:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Bounty Usd Override
+          description: Optional explicit price confirmation. When present it MUST equal the listing unit_price_usd (else HTTP 422 price_mismatch); the listing price is authoritative in v1.
+        deadline_hours:
+          anyOf:
+          - type: integer
+            maximum: 720.0
+            minimum: 1.0
+          - type: 'null'
+          title: Deadline Hours
+          description: Hours from now until the order task deadline (1..720, default 24)
+        custom_instructions:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Custom Instructions
+          description: Extra buyer instructions appended to the listing description
+        payment_network:
+          anyOf:
+          - type: string
+            maxLength: 30
+          - type: 'null'
+          title: Payment Network
+          description: Network the BUYER pays on. Must be escrow-capable, enabled for payments, AND present in the listing's accepted_networks — else HTTP 422 with a code saying which of the three failed (NETWORK_NO_ESCROW | NETWORK_DISABLED | NETWORK_NOT_ACCEPTED). Omit to use the listing's own payment_network, falling back to the first accepted network that can still settle.
+      additionalProperties: false
+      type: object
+      title: OrderServiceRequest
+      description: 'Request to order a service listing (buyer-authenticated). This is the
+
+        only money-moving step — the buyer MUST carry an X-Payment-Auth header
+
+        (escrow authorization signed for the seller wallet as receiver).'
   securitySchemes:
     erc8128:
       type: apiKey

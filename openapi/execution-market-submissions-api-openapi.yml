@@ -326,96 +326,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    RequestMoreInfoRequest:
-      properties:
-        notes:
-          type: string
-          maxLength: 1000
-          minLength: 5
-          title: Notes
-          description: Required clarification request
-      additionalProperties: false
-      type: object
-      required:
-      - notes
-      title: RequestMoreInfoRequest
-      description: Request model for requesting more info on a submission.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    SuccessResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          description: Whether the operation succeeded
-          default: true
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
-        data:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Data
-          description: Additional response data
-      type: object
-      required:
-      - message
-      title: SuccessResponse
-      description: Generic success response.
-    ApprovalRequest:
-      properties:
-        notes:
-          anyOf:
-          - type: string
-            maxLength: 1000
-          - type: 'null'
-          title: Notes
-          description: Optional notes about the approval
-        rating_score:
-          anyOf:
-          - type: integer
-            maximum: 100.0
-            minimum: 0.0
-          - type: 'null'
-          title: Rating Score
-          description: 'DEPRECATED (2026-08-28) — ACCEPTED AND IGNORED. It used to emit the publisher→executor rating through the legacy path, which puts the FACILITATOR on record as its on-chain author. That no longer blocks your own signed rating: dedup counts authors, not parties, so a legacy rating is superseded instead of 409''d, and the 409 ''already rated in this direction'' now means only that YOU already signed it — it names the author inline (`authored_by: <wallet> (rater)`). Approving pays; rate separately with POST /reputation/relay/{prepare,submit} (signed by you, gasless) or the legacy /reputation/workers/rate if you cannot sign. Still accepted so no client breaks.'
-          deprecated: true
-        lifecycle_order:
-          anyOf:
-          - $ref: '#/components/schemas/LifecycleOrderPayload'
-          - type: 'null'
-          description: EIP-712 escrow lifecycle order signed by the payer, authorizing this release. Get the typed data from GET /api/v1/escrow/task/{task_id}/lifecycle-challenge.
-      additionalProperties: false
-      type: object
-      title: ApprovalRequest
-      description: Request model for approving a submission.
     SubmissionListResponse:
       properties:
         submissions:
@@ -434,6 +344,20 @@ components:
       - count
       title: SubmissionListResponse
       description: Response model for submission list.
+    RequestMoreInfoRequest:
+      properties:
+        notes:
+          type: string
+          maxLength: 1000
+          minLength: 5
+          title: Notes
+          description: Required clarification request
+      additionalProperties: false
+      type: object
+      required:
+      - notes
+      title: RequestMoreInfoRequest
+      description: Request model for requesting more info on a submission.
     LifecycleOrderPayload:
       properties:
         action:
@@ -486,6 +410,91 @@ components:
         ``GET /api/v1/escrow/task/{task_id}/lifecycle-challenge``. It expires in 10
 
         minutes: it authorizes ONE move, not a standing permission.'
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
+          type: string
+          title: Message
+          description: Human-readable error message
+        details:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Details
+          description: Additional error context
+      type: object
+      required:
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ApprovalRequest:
+      properties:
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Notes
+          description: Optional notes about the approval
+        rating_score:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Rating Score
+          description: 'DEPRECATED (2026-08-28) — ACCEPTED AND IGNORED. It used to emit the publisher→executor rating through the legacy path, which puts the FACILITATOR on record as its on-chain author. That no longer blocks your own signed rating: dedup counts authors, not parties, so a legacy rating is superseded instead of 409''d, and the 409 ''already rated in this direction'' now means only that YOU already signed it — it names the author inline (`authored_by: <wallet> (rater)`). Approving pays; rate separately with POST /reputation/relay/{prepare,submit} (signed by you, gasless) or the legacy /reputation/workers/rate if you cannot sign. Still accepted so no client breaks.'
+          deprecated: true
+        lifecycle_order:
+          anyOf:
+          - $ref: '#/components/schemas/LifecycleOrderPayload'
+          - type: 'null'
+          description: EIP-712 escrow lifecycle order signed by the payer, authorizing this release. Get the typed data from GET /api/v1/escrow/task/{task_id}/lifecycle-challenge.
+      additionalProperties: false
+      type: object
+      title: ApprovalRequest
+      description: Request model for approving a submission.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     SubmissionResponse:
       properties:
         id:
@@ -651,15 +660,6 @@ components:
       - submitted_at
       title: SubmissionResponse
       description: Response model for submission data.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     RejectionRequest:
       properties:
         notes:
@@ -688,29 +688,29 @@ components:
       - notes
       title: RejectionRequest
       description: Request model for rejecting a submission.
-    ErrorResponse:
+    SuccessResponse:
       properties:
-        error:
-          type: string
-          title: Error
-          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        success:
+          type: boolean
+          title: Success
+          description: Whether the operation succeeded
+          default: true
         message:
           type: string
           title: Message
-          description: Human-readable error message
-        details:
+          description: Human-readable result message
+        data:
           anyOf:
           - additionalProperties: true
             type: object
           - type: 'null'
-          title: Details
-          description: Additional error context
+          title: Data
+          description: Additional response data
       type: object
       required:
-      - error
       - message
-      title: ErrorResponse
-      description: Error response model.
+      title: SuccessResponse
+      description: Generic success response.
   securitySchemes:
     erc8128:
       type: apiKey

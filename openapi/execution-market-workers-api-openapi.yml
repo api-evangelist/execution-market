@@ -936,32 +936,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
     UpdateServiceAreaRequest:
       properties:
         center_lat:
@@ -999,64 +973,6 @@ components:
       type: object
       title: UpdateServiceAreaRequest
       description: "La zona de operación que el worker declara (Chamba F2.2).\n\nDos formas de decir lo mismo, y el resultado guardado es siempre UN\npolígono (migración 217):\n\n* ``center_lat`` + ``center_lng`` + ``radius_m`` — el caso del slider.\n* ``polygon`` — un GeoJSON ``Polygon``, para dibujar el barrio a mano.\n  Es la forma que el producto quiere de verdad: una manicurista atiende\n  su barrio y el de al lado, no una circunferencia.\n\nUn cuerpo **vacío** borra la zona, y es un estado legítimo: el worker\nvuelve a ver todas las tareas. Mandar las dos formas a la vez es un error\ndel cliente, no una preferencia que el backend deba resolver adivinando.\n\nLos rangos espejan los CHECK de la migración 217 a propósito: si se\nseparan, la API acepta lo que la base rechaza y el worker recibe un 500\nsin explicación."
-    WorkerWithdrawRequest:
-      properties:
-        executor_id:
-          type: string
-          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
-          title: Executor Id
-          description: Worker's executor ID — must be the executor assigned to the task
-        reason:
-          anyOf:
-          - type: string
-            maxLength: 500
-          - type: 'null'
-          title: Reason
-          description: Optional reason for stepping down, forwarded to the publisher
-      additionalProperties: false
-      type: object
-      required:
-      - executor_id
-      title: WorkerWithdrawRequest
-      description: Request model for the assigned worker stepping down from a task.
-    SuccessResponse:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          description: Whether the operation succeeded
-          default: true
-        message:
-          type: string
-          title: Message
-          description: Human-readable result message
-        data:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Data
-          description: Additional response data
-      type: object
-      required:
-      - message
-      title: SuccessResponse
-      description: Generic success response.
-    ExecutorRegistration:
-      properties:
-        wallet_address:
-          type: string
-          pattern: ^0x[0-9a-fA-F]{40}$
-          title: Wallet Address
-        display_name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Display Name
-      type: object
-      required:
-      - wallet_address
-      title: ExecutorRegistration
     UpdateReputationNetworkRequest:
       properties:
         reputation_network:
@@ -1072,113 +988,6 @@ components:
       description: 'Request to set the chain where the user''s ERC-8004 reputation is written
 
         (decoupled from the payment chain; ratee-driven).'
-    WorkerRegisterRequest:
-      properties:
-        wallet_address:
-          type: string
-          maxLength: 42
-          minLength: 42
-          pattern: ^0x[0-9a-fA-F]{40}$
-          title: Wallet Address
-          description: Worker's EVM wallet address (0x-prefixed, 42 chars)
-        name:
-          anyOf:
-          - type: string
-            maxLength: 100
-          - type: 'null'
-          title: Name
-          description: Optional display name for the worker
-        email:
-          anyOf:
-          - type: string
-            maxLength: 255
-          - type: 'null'
-          title: Email
-          description: Optional email address
-      additionalProperties: false
-      type: object
-      required:
-      - wallet_address
-      title: WorkerRegisterRequest
-      description: Request model for registering a worker by wallet address.
-    UpdateSocialLinksRequest:
-      properties:
-        platform:
-          type: string
-          pattern: ^[a-z]{1,20}$
-          title: Platform
-          description: Social platform (e.g., 'x', 'github')
-        handle:
-          type: string
-          maxLength: 50
-          title: Handle
-          description: Handle on the platform (e.g., '@username')
-      additionalProperties: false
-      type: object
-      required:
-      - platform
-      - handle
-      title: UpdateSocialLinksRequest
-      description: Request to add or update a social link on executor profile.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ErrorResponse:
-      properties:
-        error:
-          type: string
-          title: Error
-          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
-        message:
-          type: string
-          title: Message
-          description: Human-readable error message
-        details:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Details
-          description: Additional error context
-      type: object
-      required:
-      - error
-      - message
-      title: ErrorResponse
-      description: Error response model.
-    WorkerApplicationRequest:
-      properties:
-        executor_id:
-          type: string
-          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
-          title: Executor Id
-          description: Worker's executor ID
-        message:
-          anyOf:
-          - type: string
-            maxLength: 500
-          - type: 'null'
-          title: Message
-          description: Optional message to the agent (max 500 characters)
-        reputation_network:
-          anyOf:
-          - type: string
-            maxLength: 30
-          - type: 'null'
-          title: Reputation Network
-          description: 'Chain where YOU want the reputation ABOUT YOU from this task to land — independent of where the task pays. Omit to use your profile preference, which defaults to base. Valid: base, ethereum, polygon, arbitrum, celo, monad, optimism. NOT avalanche: its C-Chain refuses EIP-7702, so a rating there could only be signed by the facilitator, never by you. Anything outside the list is rejected with 422.'
-      additionalProperties: false
-      type: object
-      required:
-      - executor_id
-      title: WorkerApplicationRequest
-      description: Request model for worker applying to a task.
     WorkerSubmissionRequest:
       properties:
         executor_id:
@@ -1212,6 +1021,197 @@ components:
       - evidence
       title: WorkerSubmissionRequest
       description: Request model for worker submitting work.
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+          title: Error
+          description: Error code (e.g. TASK_NOT_FOUND, UNAUTHORIZED)
+        message:
+          type: string
+          title: Message
+          description: Human-readable error message
+        details:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Details
+          description: Additional error context
+      type: object
+      required:
+      - error
+      - message
+      title: ErrorResponse
+      description: Error response model.
+    WorkerWithdrawRequest:
+      properties:
+        executor_id:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          title: Executor Id
+          description: Worker's executor ID — must be the executor assigned to the task
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Reason
+          description: Optional reason for stepping down, forwarded to the publisher
+      additionalProperties: false
+      type: object
+      required:
+      - executor_id
+      title: WorkerWithdrawRequest
+      description: Request model for the assigned worker stepping down from a task.
+    ExecutorRegistration:
+      properties:
+        wallet_address:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{40}$
+          title: Wallet Address
+        display_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Display Name
+      type: object
+      required:
+      - wallet_address
+      title: ExecutorRegistration
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WorkerRegisterRequest:
+      properties:
+        wallet_address:
+          type: string
+          maxLength: 42
+          minLength: 42
+          pattern: ^0x[0-9a-fA-F]{40}$
+          title: Wallet Address
+          description: Worker's EVM wallet address (0x-prefixed, 42 chars)
+        name:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Name
+          description: Optional display name for the worker
+        email:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Email
+          description: Optional email address
+      additionalProperties: false
+      type: object
+      required:
+      - wallet_address
+      title: WorkerRegisterRequest
+      description: Request model for registering a worker by wallet address.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    UpdateSocialLinksRequest:
+      properties:
+        platform:
+          type: string
+          pattern: ^[a-z]{1,20}$
+          title: Platform
+          description: Social platform (e.g., 'x', 'github')
+        handle:
+          type: string
+          maxLength: 50
+          title: Handle
+          description: Handle on the platform (e.g., '@username')
+      additionalProperties: false
+      type: object
+      required:
+      - platform
+      - handle
+      title: UpdateSocialLinksRequest
+      description: Request to add or update a social link on executor profile.
+    WorkerApplicationRequest:
+      properties:
+        executor_id:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          title: Executor Id
+          description: Worker's executor ID
+        message:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Message
+          description: Optional message to the agent (max 500 characters)
+        reputation_network:
+          anyOf:
+          - type: string
+            maxLength: 30
+          - type: 'null'
+          title: Reputation Network
+          description: 'Chain where YOU want the reputation ABOUT YOU from this task to land — independent of where the task pays. Omit to use your profile preference, which defaults to base. Valid: base, ethereum, polygon, arbitrum, celo, monad, optimism. NOT avalanche: its C-Chain refuses EIP-7702, so a rating there could only be signed by the facilitator, never by you. Anything outside the list is rejected with 422.'
+      additionalProperties: false
+      type: object
+      required:
+      - executor_id
+      title: WorkerApplicationRequest
+      description: Request model for worker applying to a task.
+    SuccessResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          description: Whether the operation succeeded
+          default: true
+        message:
+          type: string
+          title: Message
+          description: Human-readable result message
+        data:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Data
+          description: Additional response data
+      type: object
+      required:
+      - message
+      title: SuccessResponse
+      description: Generic success response.
   securitySchemes:
     erc8128:
       type: apiKey

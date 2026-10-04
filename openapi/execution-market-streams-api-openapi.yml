@@ -262,6 +262,127 @@ paths:
               schema: {}
 components:
   schemas:
+    CloseSessionRequest:
+      properties:
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Reason
+      type: object
+      title: CloseSessionRequest
+    CreateStreamRequest:
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          minLength: 3
+          title: Title
+        description:
+          type: string
+          maxLength: 5000
+          title: Description
+          default: ''
+        rate_per_unit:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Rate Per Unit
+          description: 'USDC charged per unit of viewer presence. Strictly positive ON PURPOSE: a stream is a task whose bounty is rate x max_duration, and the paid rail (escrow lock, EIP-3009 auth, fee split) has no meaning at $0, so ''free tier'' is not expressible here. To offer something free, serve it outside the paywall and link it from the stream description, like a free preview endpoint.'
+        unit:
+          type: string
+          enum:
+          - hour
+          - minute
+          - second
+          title: Unit
+          default: minute
+        network:
+          type: string
+          title: Network
+          description: Payment network (base | arbitrum)
+          default: base
+        max_duration_minutes:
+          type: integer
+          maximum: 10080.0
+          minimum: 1.0
+          title: Max Duration Minutes
+          description: Max duration of ONE viewer session. rate x max_duration is the implicit per-session cap and must be <= $100 (escrow limit).
+        listing_hours:
+          type: integer
+          maximum: 720.0
+          minimum: 1.0
+          title: Listing Hours
+          description: How long the stream stays discoverable (task deadline).
+          default: 168
+      type: object
+      required:
+      - title
+      - rate_per_unit
+      - max_duration_minutes
+      title: CreateStreamRequest
+    StreamResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        title:
+          type: string
+          title: Title
+        status:
+          type: string
+          title: Status
+        provider_wallet:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Provider Wallet
+        rate_per_unit:
+          type: number
+          title: Rate Per Unit
+        unit:
+          type: string
+          title: Unit
+        network:
+          type: string
+          title: Network
+        max_duration_minutes:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max Duration Minutes
+        session_cap_usd:
+          type: number
+          title: Session Cap Usd
+        effective_reputation_score:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Effective Reputation Score
+        provider_reputation:
+          anyOf:
+          - $ref: '#/components/schemas/ProviderReputation'
+          - type: 'null'
+        created_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created At
+        deadline:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Deadline
+      type: object
+      required:
+      - id
+      - title
+      - status
+      - rate_per_unit
+      - unit
+      - network
+      - session_cap_usd
+      title: StreamResponse
     OpenSessionRequest:
       properties:
         cap_usdc:
@@ -332,68 +453,6 @@ components:
       - count
       - offset
       title: StreamListResponse
-    StreamResponse:
-      properties:
-        id:
-          type: string
-          title: Id
-        title:
-          type: string
-          title: Title
-        status:
-          type: string
-          title: Status
-        provider_wallet:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Provider Wallet
-        rate_per_unit:
-          type: number
-          title: Rate Per Unit
-        unit:
-          type: string
-          title: Unit
-        network:
-          type: string
-          title: Network
-        max_duration_minutes:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Max Duration Minutes
-        session_cap_usd:
-          type: number
-          title: Session Cap Usd
-        effective_reputation_score:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Effective Reputation Score
-        provider_reputation:
-          anyOf:
-          - $ref: '#/components/schemas/ProviderReputation'
-          - type: 'null'
-        created_at:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Created At
-        deadline:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Deadline
-      type: object
-      required:
-      - id
-      - title
-      - status
-      - rate_per_unit
-      - unit
-      - network
-      - session_cap_usd
-      title: StreamResponse
     HTTPValidationError:
       properties:
         detail:
@@ -420,65 +479,6 @@ components:
           title: Avg Rating
       type: object
       title: ProviderReputation
-    CloseSessionRequest:
-      properties:
-        reason:
-          anyOf:
-          - type: string
-            maxLength: 500
-          - type: 'null'
-          title: Reason
-      type: object
-      title: CloseSessionRequest
-    CreateStreamRequest:
-      properties:
-        title:
-          type: string
-          maxLength: 200
-          minLength: 3
-          title: Title
-        description:
-          type: string
-          maxLength: 5000
-          title: Description
-          default: ''
-        rate_per_unit:
-          type: number
-          exclusiveMinimum: 0.0
-          title: Rate Per Unit
-          description: 'USDC charged per unit of viewer presence. Strictly positive ON PURPOSE: a stream is a task whose bounty is rate x max_duration, and the paid rail (escrow lock, EIP-3009 auth, fee split) has no meaning at $0, so ''free tier'' is not expressible here. To offer something free, serve it outside the paywall and link it from the stream description, like a free preview endpoint.'
-        unit:
-          type: string
-          enum:
-          - hour
-          - minute
-          - second
-          title: Unit
-          default: minute
-        network:
-          type: string
-          title: Network
-          description: Payment network (base | arbitrum)
-          default: base
-        max_duration_minutes:
-          type: integer
-          maximum: 10080.0
-          minimum: 1.0
-          title: Max Duration Minutes
-          description: Max duration of ONE viewer session. rate x max_duration is the implicit per-session cap and must be <= $100 (escrow limit).
-        listing_hours:
-          type: integer
-          maximum: 720.0
-          minimum: 1.0
-          title: Listing Hours
-          description: How long the stream stays discoverable (task deadline).
-          default: 168
-      type: object
-      required:
-      - title
-      - rate_per_unit
-      - max_duration_minutes
-      title: CreateStreamRequest
   securitySchemes:
     erc8128:
       type: apiKey

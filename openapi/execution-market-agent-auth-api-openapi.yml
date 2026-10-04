@@ -71,20 +71,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    AgentAuthError:
-      properties:
-        error:
-          type: string
-          title: Error
-        message:
-          type: string
-          title: Message
-      type: object
-      required:
-      - error
-      - message
-      title: AgentAuthError
-      description: Error response.
     AgentAuthResponse:
       properties:
         token:
@@ -111,6 +97,32 @@ components:
       - expires_at
       title: AgentAuthResponse
       description: Successful authentication response.
+    AgentAuthError:
+      properties:
+        error:
+          type: string
+          title: Error
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - error
+      - message
+      title: AgentAuthError
+      description: Error response.
+    AgentAuthRequest:
+      properties:
+        api_key:
+          type: string
+          minLength: 10
+          title: Api Key
+          description: 'Agent API key (format: em_<tier>_<random>)'
+      type: object
+      required:
+      - api_key
+      title: AgentAuthRequest
+      description: Request body for agent authentication.
     ValidationError:
       properties:
         loc:
@@ -137,18 +149,6 @@ components:
       - msg
       - type
       title: ValidationError
-    AgentAuthRequest:
-      properties:
-        api_key:
-          type: string
-          minLength: 10
-          title: Api Key
-          description: 'Agent API key (format: em_<tier>_<random>)'
-      type: object
-      required:
-      - api_key
-      title: AgentAuthRequest
-      description: Request body for agent authentication.
     HTTPValidationError:
       properties:
         detail:

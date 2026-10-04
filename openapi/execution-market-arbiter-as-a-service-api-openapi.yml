@@ -118,33 +118,6 @@ paths:
                 $ref: '#/components/schemas/ArbiterStatusResponse'
 components:
   schemas:
-    TaskSchema:
-      properties:
-        category:
-          type: string
-          maxLength: 50
-          title: Category
-          description: Task category (maps to per-category thresholds)
-          default: general
-        instructions:
-          anyOf:
-          - type: string
-            maxLength: 5000
-          - type: 'null'
-          title: Instructions
-          description: Human-readable task instructions
-        required_fields:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Required Fields
-          description: Evidence schema required fields
-      additionalProperties: false
-      type: object
-      title: TaskSchema
-      description: Minimal task description the arbiter needs to evaluate evidence.
     ArbiterVerifyResponse:
       properties:
         verdict:
@@ -237,32 +210,59 @@ components:
       - latency_ms
       title: ArbiterVerifyResponse
       description: Public AaaS response body.
-    ValidationError:
+    ArbiterStatusResponse:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
+        enabled:
+          type: boolean
+          title: Enabled
+        tier_thresholds:
+          additionalProperties:
+            type: number
           type: object
-          title: Context
+          title: Tier Thresholds
+        supported_categories:
+          items:
+            type: string
+          type: array
+          title: Supported Categories
+        cost_model:
+          additionalProperties: true
+          type: object
+          title: Cost Model
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      - enabled
+      - tier_thresholds
+      - supported_categories
+      - cost_model
+      title: ArbiterStatusResponse
+    VerdictSignature:
+      properties:
+        signature:
+          type: string
+          title: Signature
+        signer_address:
+          type: string
+          title: Signer Address
+        scheme:
+          type: string
+          title: Scheme
+      type: object
+      required:
+      - signature
+      - signer_address
+      - scheme
+      title: VerdictSignature
+      description: 'Off-chain EIP-191 attestation over the verdict''s commitment_hash.
+
+
+        Present only when the arbiter is configured with a dedicated signing key
+
+        (EM_ARBITER_SIGNING_KEY). Recover the signer from `signature` over
+
+        `commitment_hash` and compare it to `signer_address` to verify the verdict
+
+        was produced by this arbiter.'
     ArbiterVerifyRequest:
       properties:
         evidence:
@@ -303,6 +303,68 @@ components:
       - task_schema
       title: ArbiterVerifyRequest
       description: Public AaaS request body.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    TaskSchema:
+      properties:
+        category:
+          type: string
+          maxLength: 50
+          title: Category
+          description: Task category (maps to per-category thresholds)
+          default: general
+        instructions:
+          anyOf:
+          - type: string
+            maxLength: 5000
+          - type: 'null'
+          title: Instructions
+          description: Human-readable task instructions
+        required_fields:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Required Fields
+          description: Evidence schema required fields
+      additionalProperties: false
+      type: object
+      title: TaskSchema
+      description: Minimal task description the arbiter needs to evaluate evidence.
     RingScoreResponse:
       properties:
         ring:
@@ -339,68 +401,6 @@ components:
       - decision
       - confidence
       title: RingScoreResponse
-    ArbiterStatusResponse:
-      properties:
-        enabled:
-          type: boolean
-          title: Enabled
-        tier_thresholds:
-          additionalProperties:
-            type: number
-          type: object
-          title: Tier Thresholds
-        supported_categories:
-          items:
-            type: string
-          type: array
-          title: Supported Categories
-        cost_model:
-          additionalProperties: true
-          type: object
-          title: Cost Model
-      type: object
-      required:
-      - enabled
-      - tier_thresholds
-      - supported_categories
-      - cost_model
-      title: ArbiterStatusResponse
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    VerdictSignature:
-      properties:
-        signature:
-          type: string
-          title: Signature
-        signer_address:
-          type: string
-          title: Signer Address
-        scheme:
-          type: string
-          title: Scheme
-      type: object
-      required:
-      - signature
-      - signer_address
-      - scheme
-      title: VerdictSignature
-      description: 'Off-chain EIP-191 attestation over the verdict''s commitment_hash.
-
-
-        Present only when the arbiter is configured with a dedicated signing key
-
-        (EM_ARBITER_SIGNING_KEY). Recover the signer from `signature` over
-
-        `commitment_hash` and compare it to `signer_address` to verify the verdict
-
-        was produced by this arbiter.'
   securitySchemes:
     erc8128:
       type: apiKey

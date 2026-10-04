@@ -223,93 +223,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    IdentitySyncRequest:
-      properties:
-        irc_nick:
-          type: string
-          maxLength: 64
-          minLength: 1
-          title: Irc Nick
-        wallet_address:
-          type: string
-          maxLength: 42
-          minLength: 42
-          pattern: ^0x[0-9a-fA-F]{40}$
-          title: Wallet Address
-        trust_level:
-          type: integer
-          maximum: 3.0
-          minimum: 0.0
-          title: Trust Level
-          default: 1
-        nickserv_account:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Nickserv Account
-        agent_id:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Agent Id
-      additionalProperties: false
-      type: object
-      required:
-      - irc_nick
-      - wallet_address
-      title: IdentitySyncRequest
-    IdentitySyncResponse:
-      properties:
-        status:
-          type: string
-          title: Status
-        irc_nick:
-          type: string
-          title: Irc Nick
-        trust_level:
-          type: integer
-          title: Trust Level
-      type: object
-      required:
-      - status
-      - irc_nick
-      - trust_level
-      title: IdentitySyncResponse
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     VerifyChallengeRequest:
       properties:
         irc_nick:
@@ -370,23 +283,6 @@ components:
       - wallet_address
       - trust_level
       title: IdentityLookupResponse
-    VerifyChallengeResponse:
-      properties:
-        verified:
-          type: boolean
-          title: Verified
-        trust_level:
-          type: integer
-          title: Trust Level
-        message:
-          type: string
-          title: Message
-      type: object
-      required:
-      - verified
-      - trust_level
-      - message
-      title: VerifyChallengeResponse
     ResolvedIdentity:
       properties:
         query:
@@ -472,6 +368,110 @@ components:
         cadena, y el executor es nuestro. Un campo sin fuente seria una afirmacion
 
         sin responsable.'
+    IdentitySyncRequest:
+      properties:
+        irc_nick:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Irc Nick
+        wallet_address:
+          type: string
+          maxLength: 42
+          minLength: 42
+          pattern: ^0x[0-9a-fA-F]{40}$
+          title: Wallet Address
+        trust_level:
+          type: integer
+          maximum: 3.0
+          minimum: 0.0
+          title: Trust Level
+          default: 1
+        nickserv_account:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nickserv Account
+        agent_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Agent Id
+      additionalProperties: false
+      type: object
+      required:
+      - irc_nick
+      - wallet_address
+      title: IdentitySyncRequest
+    IdentitySyncResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        irc_nick:
+          type: string
+          title: Irc Nick
+        trust_level:
+          type: integer
+          title: Trust Level
+      type: object
+      required:
+      - status
+      - irc_nick
+      - trust_level
+      title: IdentitySyncResponse
+    VerifyChallengeResponse:
+      properties:
+        verified:
+          type: boolean
+          title: Verified
+        trust_level:
+          type: integer
+          title: Trust Level
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - verified
+      - trust_level
+      - message
+      title: VerifyChallengeResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
   securitySchemes:
     erc8128:
       type: apiKey

@@ -113,6 +113,72 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    ShowcaseResponse:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ShowcaseEvidence'
+          type: array
+          title: Items
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+        generated_at:
+          type: string
+          title: Generated At
+      type: object
+      required:
+      - items
+      - generated_at
+      title: ShowcaseResponse
+    ExecutorPreview:
+      properties:
+        display_name:
+          type: string
+          title: Display Name
+        avatar_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Avatar Url
+        rating:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Rating
+        kya_verified:
+          type: boolean
+          title: Kya Verified
+          default: false
+      type: object
+      required:
+      - display_name
+      title: ExecutorPreview
+      description: Public-safe executor card. No wallet, no user_id, no email.
+    EvidencePreview:
+      properties:
+        primary_image_url:
+          type: string
+          title: Primary Image Url
+        image_count:
+          type: integer
+          title: Image Count
+        blurhash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Blurhash
+        verification:
+          $ref: '#/components/schemas/VerificationBadges'
+      type: object
+      required:
+      - primary_image_url
+      - image_count
+      - verification
+      title: EvidencePreview
+      description: Public-safe evidence card. No GPS coords, no EXIF raw, no device fingerprint.
     ValidationError:
       properties:
         loc:
@@ -139,49 +205,6 @@ components:
       - msg
       - type
       title: ValidationError
-    VerificationBadges:
-      properties:
-        gps_verified:
-          type: boolean
-          title: Gps Verified
-          default: false
-        exif_verified:
-          type: boolean
-          title: Exif Verified
-          default: false
-        timestamp_verified:
-          type: boolean
-          title: Timestamp Verified
-          default: false
-        world_id_verified:
-          type: boolean
-          title: World Id Verified
-          default: false
-      type: object
-      title: VerificationBadges
-      description: Which verification checks this submission passed. True only, never False-with-reason.
-    EvidencePreview:
-      properties:
-        primary_image_url:
-          type: string
-          title: Primary Image Url
-        image_count:
-          type: integer
-          title: Image Count
-        blurhash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Blurhash
-        verification:
-          $ref: '#/components/schemas/VerificationBadges'
-      type: object
-      required:
-      - primary_image_url
-      - image_count
-      - verification
-      title: EvidencePreview
-      description: Public-safe evidence card. No GPS coords, no EXIF raw, no device fingerprint.
     HTTPValidationError:
       properties:
         detail:
@@ -191,50 +214,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    ExecutorPreview:
-      properties:
-        display_name:
-          type: string
-          title: Display Name
-        avatar_url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Avatar Url
-        rating:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Rating
-        kya_verified:
-          type: boolean
-          title: Kya Verified
-          default: false
-      type: object
-      required:
-      - display_name
-      title: ExecutorPreview
-      description: Public-safe executor card. No wallet, no user_id, no email.
-    ShowcaseResponse:
-      properties:
-        items:
-          items:
-            $ref: '#/components/schemas/ShowcaseEvidence'
-          type: array
-          title: Items
-        next_cursor:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Next Cursor
-        generated_at:
-          type: string
-          title: Generated At
-      type: object
-      required:
-      - items
-      - generated_at
-      title: ShowcaseResponse
     ShowcaseEvidence:
       properties:
         id:
@@ -286,6 +265,27 @@ components:
       - evidence
       title: ShowcaseEvidence
       description: One slide in the Proof Wall carousel.
+    VerificationBadges:
+      properties:
+        gps_verified:
+          type: boolean
+          title: Gps Verified
+          default: false
+        exif_verified:
+          type: boolean
+          title: Exif Verified
+          default: false
+        timestamp_verified:
+          type: boolean
+          title: Timestamp Verified
+          default: false
+        world_id_verified:
+          type: boolean
+          title: World Id Verified
+          default: false
+      type: object
+      title: VerificationBadges
+      description: Which verification checks this submission passed. True only, never False-with-reason.
   securitySchemes:
     erc8128:
       type: apiKey
