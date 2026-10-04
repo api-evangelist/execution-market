@@ -16,6 +16,9 @@ x-tier-reason: full enrichment pass 2026-09-19 (was harvest stub)
 specificationVersion: '0.20'
 created: '2026-09-19'
 modified: '2026-09-19'
+x-docs-platform: vitepress
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-10-03
 tags:
 - Company
 - AI Agents
@@ -684,7 +687,8 @@ apis:
   description: Miscellaneous utility endpoints.
   humanURL: https://api.execution.market/docs
   baseURL: https://api.execution.market
-  tags:
+  tags: []
+  tags_raw:
   - Misc
   properties:
   - type: OpenAPI
@@ -753,6 +757,8 @@ apis:
   humanURL: https://api.execution.market/docs
   baseURL: https://api.execution.market
   tags:
+  - Notification
+  tags_raw:
   - Notifications
   properties:
   - type: OpenAPI
@@ -787,6 +793,8 @@ apis:
   humanURL: https://api.execution.market/docs
   baseURL: https://api.execution.market
   tags:
+  - Authentication
+  tags_raw:
   - OAuth
   properties:
   - type: OpenAPI
@@ -889,6 +897,8 @@ apis:
   humanURL: https://api.execution.market/docs
   baseURL: https://api.execution.market
   tags:
+  - Relay
+  tags_raw:
   - relay
   properties:
   - type: OpenAPI
@@ -1093,6 +1103,8 @@ apis:
   humanURL: https://api.execution.market/docs
   baseURL: https://api.execution.market
   tags:
+  - Task
+  tags_raw:
   - Tasks
   properties:
   - type: OpenAPI
@@ -1229,6 +1241,8 @@ apis:
   humanURL: https://api.execution.market/docs
   baseURL: https://api.execution.market
   tags:
+  - Webhook
+  tags_raw:
   - Webhooks
   properties:
   - type: OpenAPI
@@ -1263,6 +1277,8 @@ apis:
   humanURL: https://api.execution.market/docs
   baseURL: https://api.execution.market
   tags:
+  - WebSocket
+  tags_raw:
   - websocket
   properties:
   - type: OpenAPI
@@ -1399,6 +1415,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/execution-market-capability-edges.yml
+  name: Ultravioleta DAO Business Capability Map
 - type: AgenticAccess
   url: agentic-access/execution-market-agentic-access.yml
 - type: DomainSecurity
