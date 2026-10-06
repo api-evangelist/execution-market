@@ -15,7 +15,7 @@ x-tier: profiled
 x-tier-reason: full enrichment pass 2026-09-19 (was harvest stub)
 specificationVersion: '0.20'
 created: '2026-09-19'
-modified: '2026-09-19'
+modified: '2026-10-06'
 x-docs-platform: vitepress
 x-docs-platform-confidence: medium
 x-docs-platform-checked: 2026-10-03
@@ -1415,6 +1415,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- url: https://execution.market/blog/
+  type: Blog
 - type: CapabilityMap
   url: capabilities/execution-market-capability-edges.yml
   name: Ultravioleta DAO Business Capability Map
