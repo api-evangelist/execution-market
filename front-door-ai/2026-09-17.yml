@@ -1,0 +1,31 @@
+# Front Door AI Index — execution-market — 2026-09-17
+# AI vocabulary counted on the provider's root page. Generated; do not edit.
+# `score` is null unless ownership is `own` — see front_door_ai.py.
+front_door_ai:
+  slug: execution-market
+  lexicon_version: '1.0'
+  probed_at: '2026-09-25'
+  host: execution.market
+  final_host: execution.market
+  ownership: own
+  owner: execution-market
+  shares_host_with: null
+  inherited_from: null
+  alias_of: null
+  verdict: scored
+  score: 6
+  band: 4
+  band_label: moderate
+  host_score: 6
+  density: 73.17
+  words: 82
+  tiers:
+    agentic: 4
+    core: 2
+    model: 0
+  ambiguous: 2
+  top_terms:
+    AI agent: 2
+    AI: 2
+    MCP: 2
+    agent: 2
