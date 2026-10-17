@@ -321,6 +321,64 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BlockedUserResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        blocked_user_id:
+          type: string
+          title: Blocked User Id
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - id
+      - blocked_user_id
+      - created_at
+      title: BlockedUserResponse
+    UpdateReportRequest:
+      properties:
+        status:
+          type: string
+          pattern: ^(reviewed|actioned|dismissed)$
+          title: Status
+          description: New report status
+        admin_notes:
+          anyOf:
+          - type: string
+            maxLength: 5000
+          - type: 'null'
+          title: Admin Notes
+          description: Admin notes
+      additionalProperties: false
+      type: object
+      required:
+      - status
+      title: UpdateReportRequest
+    BlockUserRequest:
+      properties:
+        blocked_user_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+          title: Blocked User Id
+          description: UUID of the user to block
+      additionalProperties: false
+      type: object
+      required:
+      - blocked_user_id
+      title: BlockUserRequest
     CreateReportRequest:
       properties:
         target_type:
@@ -353,23 +411,32 @@ components:
       - target_id
       - reason_category
       title: CreateReportRequest
-    BlockedUserResponse:
+    ValidationError:
       properties:
-        id:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
           type: string
-          title: Id
-        blocked_user_id:
+          title: Message
+        type:
           type: string
-          title: Blocked User Id
-        created_at:
-          type: string
-          title: Created At
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
-      - id
-      - blocked_user_id
-      - created_at
-      title: BlockedUserResponse
+      - loc
+      - msg
+      - type
+      title: ValidationError
     ReportResponse:
       properties:
         id:
@@ -418,73 +485,6 @@ components:
       - status
       - created_at
       title: ReportResponse
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    BlockUserRequest:
-      properties:
-        blocked_user_id:
-          type: string
-          maxLength: 36
-          minLength: 36
-          title: Blocked User Id
-          description: UUID of the user to block
-      additionalProperties: false
-      type: object
-      required:
-      - blocked_user_id
-      title: BlockUserRequest
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    UpdateReportRequest:
-      properties:
-        status:
-          type: string
-          pattern: ^(reviewed|actioned|dismissed)$
-          title: Status
-          description: New report status
-        admin_notes:
-          anyOf:
-          - type: string
-            maxLength: 5000
-          - type: 'null'
-          title: Admin Notes
-          description: Admin notes
-      additionalProperties: false
-      type: object
-      required:
-      - status
-      title: UpdateReportRequest
   securitySchemes:
     erc8128:
       type: apiKey

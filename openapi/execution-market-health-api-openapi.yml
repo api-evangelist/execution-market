@@ -283,6 +283,15 @@ paths:
       security: []
 components:
   schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     ComponentHealthModel:
       properties:
         status:
@@ -318,27 +327,6 @@ components:
       - last_check
       title: ComponentHealthModel
       description: Health status of a single component (mirrors ComponentHealth.to_dict).
-    LivenessResponse:
-      properties:
-        status:
-          type: string
-          title: Status
-          description: Always 'alive' when the process is up
-        timestamp:
-          type: string
-          title: Timestamp
-          description: ISO 8601 timestamp
-        uptime_seconds:
-          type: number
-          title: Uptime Seconds
-          description: Process uptime in seconds
-      type: object
-      required:
-      - status
-      - timestamp
-      - uptime_seconds
-      title: LivenessResponse
-      description: Liveness probe response.
     ValidationError:
       properties:
         loc:
@@ -365,15 +353,6 @@ components:
       - msg
       - type
       title: ValidationError
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     HealthCheckResponse:
       properties:
         status:
@@ -421,6 +400,27 @@ components:
         about the database, and a reader who cannot tell the two apart will read a
 
         green liveness answer as a green system.'
+    LivenessResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Always 'alive' when the process is up
+        timestamp:
+          type: string
+          title: Timestamp
+          description: ISO 8601 timestamp
+        uptime_seconds:
+          type: number
+          title: Uptime Seconds
+          description: Process uptime in seconds
+      type: object
+      required:
+      - status
+      - timestamp
+      - uptime_seconds
+      title: LivenessResponse
+      description: Liveness probe response.
   securitySchemes:
     erc8128:
       type: apiKey

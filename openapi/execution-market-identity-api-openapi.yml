@@ -223,28 +223,15 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    VerifyChallengeRequest:
+    HTTPValidationError:
       properties:
-        irc_nick:
-          type: string
-          title: Irc Nick
-        wallet_address:
-          type: string
-          title: Wallet Address
-        signature:
-          type: string
-          title: Signature
-        nonce:
-          type: string
-          title: Nonce
-      additionalProperties: false
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
       type: object
-      required:
-      - irc_nick
-      - wallet_address
-      - signature
-      - nonce
-      title: VerifyChallengeRequest
+      title: HTTPValidationError
     IdentityLookupResponse:
       properties:
         irc_nick:
@@ -283,6 +270,66 @@ components:
       - wallet_address
       - trust_level
       title: IdentityLookupResponse
+    IdentitySyncResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        irc_nick:
+          type: string
+          title: Irc Nick
+        trust_level:
+          type: integer
+          title: Trust Level
+      type: object
+      required:
+      - status
+      - irc_nick
+      - trust_level
+      title: IdentitySyncResponse
+    VerifyChallengeResponse:
+      properties:
+        verified:
+          type: boolean
+          title: Verified
+        trust_level:
+          type: integer
+          title: Trust Level
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - verified
+      - trust_level
+      - message
+      title: VerifyChallengeResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
     ResolvedIdentity:
       properties:
         query:
@@ -403,75 +450,28 @@ components:
       - irc_nick
       - wallet_address
       title: IdentitySyncRequest
-    IdentitySyncResponse:
+    VerifyChallengeRequest:
       properties:
-        status:
-          type: string
-          title: Status
         irc_nick:
           type: string
           title: Irc Nick
-        trust_level:
-          type: integer
-          title: Trust Level
+        wallet_address:
+          type: string
+          title: Wallet Address
+        signature:
+          type: string
+          title: Signature
+        nonce:
+          type: string
+          title: Nonce
+      additionalProperties: false
       type: object
       required:
-      - status
       - irc_nick
-      - trust_level
-      title: IdentitySyncResponse
-    VerifyChallengeResponse:
-      properties:
-        verified:
-          type: boolean
-          title: Verified
-        trust_level:
-          type: integer
-          title: Trust Level
-        message:
-          type: string
-          title: Message
-      type: object
-      required:
-      - verified
-      - trust_level
-      - message
-      title: VerifyChallengeResponse
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
+      - wallet_address
+      - signature
+      - nonce
+      title: VerifyChallengeRequest
   securitySchemes:
     erc8128:
       type: apiKey

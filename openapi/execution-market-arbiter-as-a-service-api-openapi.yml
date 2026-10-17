@@ -210,32 +210,15 @@ components:
       - latency_ms
       title: ArbiterVerifyResponse
       description: Public AaaS response body.
-    ArbiterStatusResponse:
+    HTTPValidationError:
       properties:
-        enabled:
-          type: boolean
-          title: Enabled
-        tier_thresholds:
-          additionalProperties:
-            type: number
-          type: object
-          title: Tier Thresholds
-        supported_categories:
+        detail:
           items:
-            type: string
+            $ref: '#/components/schemas/ValidationError'
           type: array
-          title: Supported Categories
-        cost_model:
-          additionalProperties: true
-          type: object
-          title: Cost Model
+          title: Detail
       type: object
-      required:
-      - enabled
-      - tier_thresholds
-      - supported_categories
-      - cost_model
-      title: ArbiterStatusResponse
+      title: HTTPValidationError
     VerdictSignature:
       properties:
         signature:
@@ -263,81 +246,32 @@ components:
         `commitment_hash` and compare it to `signer_address` to verify the verdict
 
         was produced by this arbiter.'
-    ArbiterVerifyRequest:
+    ArbiterStatusResponse:
       properties:
-        evidence:
+        enabled:
+          type: boolean
+          title: Enabled
+        tier_thresholds:
+          additionalProperties:
+            type: number
+          type: object
+          title: Tier Thresholds
+        supported_categories:
+          items:
+            type: string
+          type: array
+          title: Supported Categories
+        cost_model:
           additionalProperties: true
           type: object
-          title: Evidence
-          description: Evidence payload to evaluate (arbitrary dict)
-        task_schema:
-          $ref: '#/components/schemas/TaskSchema'
-          description: Task description
-        bounty_usd:
-          type: number
-          maximum: 10000.0
-          minimum: 0.0
-          title: Bounty Usd
-          description: Task bounty (drives tier routing and cost cap)
-          default: 0.0
-        photint_score:
-          anyOf:
-          - type: number
-            maximum: 1.0
-            minimum: 0.0
-          - type: 'null'
-          title: Photint Score
-          description: Optional caller-provided Ring 1 (PHOTINT) score
-        photint_confidence:
-          anyOf:
-          - type: number
-            maximum: 1.0
-            minimum: 0.0
-          - type: 'null'
-          title: Photint Confidence
-          description: Optional Ring 1 confidence
-      additionalProperties: false
+          title: Cost Model
       type: object
       required:
-      - evidence
-      - task_schema
-      title: ArbiterVerifyRequest
-      description: Public AaaS request body.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
+      - enabled
+      - tier_thresholds
+      - supported_categories
+      - cost_model
+      title: ArbiterStatusResponse
     TaskSchema:
       properties:
         category:
@@ -401,6 +335,72 @@ components:
       - decision
       - confidence
       title: RingScoreResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ArbiterVerifyRequest:
+      properties:
+        evidence:
+          additionalProperties: true
+          type: object
+          title: Evidence
+          description: Evidence payload to evaluate (arbitrary dict)
+        task_schema:
+          $ref: '#/components/schemas/TaskSchema'
+          description: Task description
+        bounty_usd:
+          type: number
+          maximum: 10000.0
+          minimum: 0.0
+          title: Bounty Usd
+          description: Task bounty (drives tier routing and cost cap)
+          default: 0.0
+        photint_score:
+          anyOf:
+          - type: number
+            maximum: 1.0
+            minimum: 0.0
+          - type: 'null'
+          title: Photint Score
+          description: Optional caller-provided Ring 1 (PHOTINT) score
+        photint_confidence:
+          anyOf:
+          - type: number
+            maximum: 1.0
+            minimum: 0.0
+          - type: 'null'
+          title: Photint Confidence
+          description: Optional Ring 1 confidence
+      additionalProperties: false
+      type: object
+      required:
+      - evidence
+      - task_schema
+      title: ArbiterVerifyRequest
+      description: Public AaaS request body.
   securitySchemes:
     erc8128:
       type: apiKey

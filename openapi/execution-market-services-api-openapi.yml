@@ -358,76 +358,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    JevSellerVeto:
-      properties:
-        sospechoso_jev:
-          type: boolean
-          title: Sospechoso Jev
-          description: 'True when Jev read this seller''s record as a manufactured reputation (score >= threshold). Advisory: it never blocks an order, hides a listing or reorders the board.'
-        score:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Score
-          description: Jev's answer to the manufactured-reputation question (0-1). Null when Jev did not answer — which is not a zero.
-        threshold:
-          type: number
-          title: Threshold
-          description: The threshold the score was read against, frozen by the gate of 2026-09-18 for this exact model version. It travels with the score because a number without its bar is not a measurement.
-        model:
-          type: string
-          title: Model
-          description: The pinned Jev version that answered.
-        injection_flagged:
-          type: boolean
-          title: Injection Flagged
-          description: True when the seller's own description was written to steer the evaluator. The score is still reported, marked.
-        state_questions_hash:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: State Questions Hash
-          description: sha256 of the exact (state, questions) pair sent, so the answer can be recomputed later without keeping the seller's prose.
-        error:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Error
-          description: Why Jev did not answer, when it did not.
-        legend:
-          type: string
-          title: Legend
-          description: Says, in the payload itself, that this marks and does not decide.
-      type: object
-      required:
-      - sospechoso_jev
-      - threshold
-      - model
-      - injection_flagged
-      - legend
-      title: JevSellerVeto
-      description: 'Jev''s C4 second opinion on a seller. A MARK, never a decision.
-
-
-        Present only when ``EM_JEV_VETO_C4_ENABLED`` is on AND Jev answered inside
-
-        its 2 s budget. **Absent is not clean**: a provider that was slow, down or
-
-        missing its key produces no field at all, and nothing in this response says
-
-        a seller was vetted.
-
-
-        ``sospechoso_jev`` false means "not marked", which is also not "clean" — the
-
-        gate measured C4 against labels we authored ourselves, so it is allowed to
-
-        close a row and never to open one.
-
-
-        No ``confidence`` is carried and none exists: the decisive question is a
-
-        Noul, and the gate''s axis B is not measurable for this case at all.'
     ServiceListingListResponse:
       properties:
         listings:
@@ -462,39 +392,6 @@ components:
       - offset
       title: ServiceListingListResponse
       description: Paginated list of service listings.
-    SellerCorrelation:
-      properties:
-        total_completed:
-          type: integer
-          title: Total Completed
-          description: Completed tasks as executor
-        distinct_counterparties:
-          type: integer
-          title: Distinct Counterparties
-          description: How many different buyers those completions came from
-        top_counterparty_share:
-          type: number
-          title: Top Counterparty Share
-          description: Share of completed work with the single biggest buyer (0-1)
-        flagged:
-          type: boolean
-          title: Flagged
-          description: True when the history is concentrated enough to warrant a second look (>=3 completed AND a single counterparty or >=80% share). Advisory only — it never blocks an order.
-      type: object
-      required:
-      - total_completed
-      - distinct_counterparties
-      - top_counterparty_share
-      - flagged
-      title: SellerCorrelation
-      description: 'How diversified a seller''s completed history is (advisory).
-
-
-        The reputation score alone cannot separate 100 tasks across a hundred
-
-        buyers from 100 tasks with a single buyer — the wash-trading shape. This
-
-        is the field that makes the difference visible.'
     CreateServiceListingRequest:
       properties:
         title:
@@ -569,58 +466,6 @@ components:
         NO escrow and no funds move here — this is advertising only. The seller is
 
         bound to the authenticated caller server-side; there is no seller field.'
-    TaskCategory:
-      type: string
-      enum:
-      - physical_presence
-      - knowledge_access
-      - human_authority
-      - simple_action
-      - digital_physical
-      - location_based
-      - verification
-      - social_proof
-      - data_collection
-      - sensory
-      - social
-      - proxy
-      - bureaucratic
-      - emergency
-      - creative
-      - data_processing
-      - api_integration
-      - content_generation
-      - code_execution
-      - research
-      - multi_step_workflow
-      title: TaskCategory
-      description: Categories of tasks that executors can complete.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
     SellerReputation:
       properties:
         reputation:
@@ -666,6 +511,241 @@ components:
       - tasks_completed
       title: SellerReputation
       description: Read-only, public seller reputation surfaced on browse/detail.
+    OrderServiceResponse:
+      properties:
+        task_id:
+          type: string
+          title: Task Id
+          description: UUID of the demand-side task created for the order
+        listing_id:
+          type: string
+          title: Listing Id
+          description: UUID of the ordered listing
+        seller_executor_id:
+          type: string
+          title: Seller Executor Id
+          description: Seller executor UUID (assigned worker)
+        bounty_usd:
+          type: number
+          title: Bounty Usd
+          description: Order amount in USD (the listing price)
+        escrow_status:
+          type: string
+          title: Escrow Status
+          description: '''locked'' (synchronous lock succeeded) or ''assigning'' (async lock in progress)'
+        payment_network:
+          type: string
+          title: Payment Network
+          description: Payment network for the order escrow
+        task_status:
+          type: string
+          title: Task Status
+          description: Task status after assignment ('accepted' or 'assigning')
+      type: object
+      required:
+      - task_id
+      - listing_id
+      - seller_executor_id
+      - bounty_usd
+      - escrow_status
+      - payment_network
+      - task_status
+      title: OrderServiceResponse
+      description: 'Result of ordering a service listing — mirrors the under-the-hood
+
+        escrowed demand-side task+assignment.'
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    UpdateServiceListingRequest:
+      properties:
+        availability:
+          anyOf:
+          - type: string
+            pattern: ^(active|paused)$
+          - type: 'null'
+          title: Availability
+          description: 'Listing availability: ''active'' (orderable) or ''paused'''
+        description:
+          anyOf:
+          - type: string
+            maxLength: 5000
+            minLength: 20
+          - type: 'null'
+          title: Description
+          description: Updated service description
+        unit_price_usd:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Unit Price Usd
+          description: Updated price per order in USD
+        skills:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 20
+          - type: 'null'
+          title: Skills
+          description: Updated skills list (max 20 items, 50 chars each)
+        evidence_schema:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 5
+          - type: 'null'
+          title: Evidence Schema
+          description: Updated evidence types a delivery must include
+        accepted_networks:
+          anyOf:
+          - items:
+              type: string
+            type: array
+            maxItems: 20
+            minItems: 1
+          - type: 'null'
+          title: Accepted Networks
+          description: Updated set of networks a BUYER may pay this listing on. Every entry must be escrow-capable (else HTTP 422); the list can never be emptied — a listing that accepts no network is unbuyable.
+      additionalProperties: false
+      type: object
+      title: UpdateServiceListingRequest
+      description: 'Request to update a service listing (owner-only). All fields optional;
+
+        only the provided fields change. ``availability`` toggles active|paused.'
+    SellerCorrelation:
+      properties:
+        total_completed:
+          type: integer
+          title: Total Completed
+          description: Completed tasks as executor
+        distinct_counterparties:
+          type: integer
+          title: Distinct Counterparties
+          description: How many different buyers those completions came from
+        top_counterparty_share:
+          type: number
+          title: Top Counterparty Share
+          description: Share of completed work with the single biggest buyer (0-1)
+        flagged:
+          type: boolean
+          title: Flagged
+          description: True when the history is concentrated enough to warrant a second look (>=3 completed AND a single counterparty or >=80% share). Advisory only — it never blocks an order.
+      type: object
+      required:
+      - total_completed
+      - distinct_counterparties
+      - top_counterparty_share
+      - flagged
+      title: SellerCorrelation
+      description: 'How diversified a seller''s completed history is (advisory).
+
+
+        The reputation score alone cannot separate 100 tasks across a hundred
+
+        buyers from 100 tasks with a single buyer — the wash-trading shape. This
+
+        is the field that makes the difference visible.'
+    OrderServiceRequest:
+      properties:
+        bounty_usd_override:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Bounty Usd Override
+          description: Optional explicit price confirmation. When present it MUST equal the listing unit_price_usd (else HTTP 422 price_mismatch); the listing price is authoritative in v1.
+        deadline_hours:
+          anyOf:
+          - type: integer
+            maximum: 720.0
+            minimum: 1.0
+          - type: 'null'
+          title: Deadline Hours
+          description: Hours from now until the order task deadline (1..720, default 24)
+        custom_instructions:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Custom Instructions
+          description: Extra buyer instructions appended to the listing description
+        payment_network:
+          anyOf:
+          - type: string
+            maxLength: 30
+          - type: 'null'
+          title: Payment Network
+          description: Network the BUYER pays on. Must be escrow-capable, enabled for payments, AND present in the listing's accepted_networks — else HTTP 422 with a code saying which of the three failed (NETWORK_NO_ESCROW | NETWORK_DISABLED | NETWORK_NOT_ACCEPTED). Omit to use the listing's own payment_network, falling back to the first accepted network that can still settle.
+      additionalProperties: false
+      type: object
+      title: OrderServiceRequest
+      description: 'Request to order a service listing (buyer-authenticated). This is the
+
+        only money-moving step — the buyer MUST carry an X-Payment-Auth header
+
+        (escrow authorization signed for the seller wallet as receiver).'
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    TaskCategory:
+      type: string
+      enum:
+      - physical_presence
+      - knowledge_access
+      - human_authority
+      - simple_action
+      - digital_physical
+      - location_based
+      - verification
+      - social_proof
+      - data_collection
+      - sensory
+      - social
+      - proxy
+      - bureaucratic
+      - emergency
+      - creative
+      - data_processing
+      - api_integration
+      - content_generation
+      - code_execution
+      - research
+      - multi_step_workflow
+      title: TaskCategory
+      description: Categories of tasks that executors can complete.
     ServiceListingResponse:
       properties:
         id:
@@ -785,156 +865,76 @@ components:
       - created_at
       title: ServiceListingResponse
       description: A single service listing.
-    HTTPValidationError:
+    JevSellerVeto:
       properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    OrderServiceResponse:
-      properties:
-        task_id:
-          type: string
-          title: Task Id
-          description: UUID of the demand-side task created for the order
-        listing_id:
-          type: string
-          title: Listing Id
-          description: UUID of the ordered listing
-        seller_executor_id:
-          type: string
-          title: Seller Executor Id
-          description: Seller executor UUID (assigned worker)
-        bounty_usd:
+        sospechoso_jev:
+          type: boolean
+          title: Sospechoso Jev
+          description: 'True when Jev read this seller''s record as a manufactured reputation (score >= threshold). Advisory: it never blocks an order, hides a listing or reorders the board.'
+        score:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Score
+          description: Jev's answer to the manufactured-reputation question (0-1). Null when Jev did not answer — which is not a zero.
+        threshold:
           type: number
-          title: Bounty Usd
-          description: Order amount in USD (the listing price)
-        escrow_status:
+          title: Threshold
+          description: The threshold the score was read against, frozen by the gate of 2026-09-18 for this exact model version. It travels with the score because a number without its bar is not a measurement.
+        model:
           type: string
-          title: Escrow Status
-          description: '''locked'' (synchronous lock succeeded) or ''assigning'' (async lock in progress)'
-        payment_network:
+          title: Model
+          description: The pinned Jev version that answered.
+        injection_flagged:
+          type: boolean
+          title: Injection Flagged
+          description: True when the seller's own description was written to steer the evaluator. The score is still reported, marked.
+        state_questions_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State Questions Hash
+          description: sha256 of the exact (state, questions) pair sent, so the answer can be recomputed later without keeping the seller's prose.
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+          description: Why Jev did not answer, when it did not.
+        legend:
           type: string
-          title: Payment Network
-          description: Payment network for the order escrow
-        task_status:
-          type: string
-          title: Task Status
-          description: Task status after assignment ('accepted' or 'assigning')
+          title: Legend
+          description: Says, in the payload itself, that this marks and does not decide.
       type: object
       required:
-      - task_id
-      - listing_id
-      - seller_executor_id
-      - bounty_usd
-      - escrow_status
-      - payment_network
-      - task_status
-      title: OrderServiceResponse
-      description: 'Result of ordering a service listing — mirrors the under-the-hood
+      - sospechoso_jev
+      - threshold
+      - model
+      - injection_flagged
+      - legend
+      title: JevSellerVeto
+      description: 'Jev''s C4 second opinion on a seller. A MARK, never a decision.
 
-        escrowed demand-side task+assignment.'
-    UpdateServiceListingRequest:
-      properties:
-        availability:
-          anyOf:
-          - type: string
-            pattern: ^(active|paused)$
-          - type: 'null'
-          title: Availability
-          description: 'Listing availability: ''active'' (orderable) or ''paused'''
-        description:
-          anyOf:
-          - type: string
-            maxLength: 5000
-            minLength: 20
-          - type: 'null'
-          title: Description
-          description: Updated service description
-        unit_price_usd:
-          anyOf:
-          - type: number
-            maximum: 100.0
-            exclusiveMinimum: 0.0
-          - type: 'null'
-          title: Unit Price Usd
-          description: Updated price per order in USD
-        skills:
-          anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 20
-          - type: 'null'
-          title: Skills
-          description: Updated skills list (max 20 items, 50 chars each)
-        evidence_schema:
-          anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 5
-          - type: 'null'
-          title: Evidence Schema
-          description: Updated evidence types a delivery must include
-        accepted_networks:
-          anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 20
-            minItems: 1
-          - type: 'null'
-          title: Accepted Networks
-          description: Updated set of networks a BUYER may pay this listing on. Every entry must be escrow-capable (else HTTP 422); the list can never be emptied — a listing that accepts no network is unbuyable.
-      additionalProperties: false
-      type: object
-      title: UpdateServiceListingRequest
-      description: 'Request to update a service listing (owner-only). All fields optional;
 
-        only the provided fields change. ``availability`` toggles active|paused.'
-    OrderServiceRequest:
-      properties:
-        bounty_usd_override:
-          anyOf:
-          - type: number
-            exclusiveMinimum: 0.0
-          - type: 'null'
-          title: Bounty Usd Override
-          description: Optional explicit price confirmation. When present it MUST equal the listing unit_price_usd (else HTTP 422 price_mismatch); the listing price is authoritative in v1.
-        deadline_hours:
-          anyOf:
-          - type: integer
-            maximum: 720.0
-            minimum: 1.0
-          - type: 'null'
-          title: Deadline Hours
-          description: Hours from now until the order task deadline (1..720, default 24)
-        custom_instructions:
-          anyOf:
-          - type: string
-            maxLength: 2000
-          - type: 'null'
-          title: Custom Instructions
-          description: Extra buyer instructions appended to the listing description
-        payment_network:
-          anyOf:
-          - type: string
-            maxLength: 30
-          - type: 'null'
-          title: Payment Network
-          description: Network the BUYER pays on. Must be escrow-capable, enabled for payments, AND present in the listing's accepted_networks — else HTTP 422 with a code saying which of the three failed (NETWORK_NO_ESCROW | NETWORK_DISABLED | NETWORK_NOT_ACCEPTED). Omit to use the listing's own payment_network, falling back to the first accepted network that can still settle.
-      additionalProperties: false
-      type: object
-      title: OrderServiceRequest
-      description: 'Request to order a service listing (buyer-authenticated). This is the
+        Present only when ``EM_JEV_VETO_C4_ENABLED`` is on AND Jev answered inside
 
-        only money-moving step — the buyer MUST carry an X-Payment-Auth header
+        its 2 s budget. **Absent is not clean**: a provider that was slow, down or
 
-        (escrow authorization signed for the seller wallet as receiver).'
+        missing its key produces no field at all, and nothing in this response says
+
+        a seller was vetted.
+
+
+        ``sospechoso_jev`` false means "not marked", which is also not "clean" — the
+
+        gate measured C4 against labels we authored ourselves, so it is allowed to
+
+        close a row and never to open one.
+
+
+        No ``confidence`` is carried and none exists: the decisive question is a
+
+        Noul, and the gate''s axis B is not measurable for this case at all.'
   securitySchemes:
     erc8128:
       type: apiKey

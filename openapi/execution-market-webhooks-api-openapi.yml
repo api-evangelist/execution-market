@@ -214,33 +214,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    WebhookUpdateRequest:
-      properties:
-        url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Url
-        events:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Events
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-        status:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Status
-      additionalProperties: false
-      type: object
-      title: WebhookUpdateRequest
     WebhookCreateResponse:
       properties:
         webhook_id:
@@ -302,6 +275,15 @@ components:
       - updated_at
       - secret
       title: WebhookCreateResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     ValidationError:
       properties:
         loc:
@@ -328,15 +310,57 @@ components:
       - msg
       - type
       title: ValidationError
-    HTTPValidationError:
+    WebhookUpdateRequest:
       properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
+        url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Url
+        events:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Events
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      additionalProperties: false
       type: object
-      title: HTTPValidationError
+      title: WebhookUpdateRequest
+    WebhookCreateRequest:
+      properties:
+        url:
+          type: string
+          title: Url
+          description: HTTPS endpoint URL
+        events:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Events
+          description: Event types to subscribe to
+        description:
+          type: string
+          title: Description
+          description: Human-readable description
+          default: ''
+      additionalProperties: false
+      type: object
+      required:
+      - url
+      - events
+      title: WebhookCreateRequest
     WebhookResponse:
       properties:
         webhook_id:
@@ -393,30 +417,6 @@ components:
       - created_at
       - updated_at
       title: WebhookResponse
-    WebhookCreateRequest:
-      properties:
-        url:
-          type: string
-          title: Url
-          description: HTTPS endpoint URL
-        events:
-          items:
-            type: string
-          type: array
-          minItems: 1
-          title: Events
-          description: Event types to subscribe to
-        description:
-          type: string
-          title: Description
-          description: Human-readable description
-          default: ''
-      additionalProperties: false
-      type: object
-      required:
-      - url
-      - events
-      title: WebhookCreateRequest
   securitySchemes:
     erc8128:
       type: apiKey

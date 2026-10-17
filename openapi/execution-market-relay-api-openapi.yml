@@ -176,76 +176,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    HandoffRequest:
-      properties:
-        handoff_code:
-          type: string
-          maxLength: 8
-          minLength: 4
-          title: Handoff Code
-        evidence:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Evidence
-      additionalProperties: false
-      type: object
-      required:
-      - handoff_code
-      title: HandoffRequest
-    AssignLegRequest:
-      properties:
-        worker_wallet:
-          type: string
-          maxLength: 42
-          minLength: 42
-          title: Worker Wallet
-        worker_nick:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Worker Nick
-      additionalProperties: false
-      type: object
-      required:
-      - worker_wallet
-      title: AssignLegRequest
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-        input:
-          title: Input
-        ctx:
-          type: object
-          title: Context
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
     LegInput:
       properties:
         pickup_location:
@@ -270,37 +200,6 @@ components:
       required:
       - bounty_usdc
       title: LegInput
-    RelayChainResponse:
-      properties:
-        chain_id:
-          type: string
-          title: Chain Id
-        parent_task_id:
-          type: string
-          title: Parent Task Id
-        status:
-          type: string
-          title: Status
-        total_legs:
-          type: integer
-          title: Total Legs
-        completed_legs:
-          type: integer
-          title: Completed Legs
-        legs:
-          items:
-            $ref: '#/components/schemas/LegResponse'
-          type: array
-          title: Legs
-          default: []
-      type: object
-      required:
-      - chain_id
-      - parent_task_id
-      - status
-      - total_legs
-      - completed_legs
-      title: RelayChainResponse
     LegResponse:
       properties:
         leg_id:
@@ -359,6 +258,107 @@ components:
       - status
       - bounty_usdc
       title: LegResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    HandoffRequest:
+      properties:
+        handoff_code:
+          type: string
+          maxLength: 8
+          minLength: 4
+          title: Handoff Code
+        evidence:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Evidence
+      additionalProperties: false
+      type: object
+      required:
+      - handoff_code
+      title: HandoffRequest
+    RelayChainResponse:
+      properties:
+        chain_id:
+          type: string
+          title: Chain Id
+        parent_task_id:
+          type: string
+          title: Parent Task Id
+        status:
+          type: string
+          title: Status
+        total_legs:
+          type: integer
+          title: Total Legs
+        completed_legs:
+          type: integer
+          title: Completed Legs
+        legs:
+          items:
+            $ref: '#/components/schemas/LegResponse'
+          type: array
+          title: Legs
+          default: []
+      type: object
+      required:
+      - chain_id
+      - parent_task_id
+      - status
+      - total_legs
+      - completed_legs
+      title: RelayChainResponse
+    AssignLegRequest:
+      properties:
+        worker_wallet:
+          type: string
+          maxLength: 42
+          minLength: 42
+          title: Worker Wallet
+        worker_nick:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Worker Nick
+      additionalProperties: false
+      type: object
+      required:
+      - worker_wallet
+      title: AssignLegRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
     CreateRelayChainRequest:
       properties:
         task_id:

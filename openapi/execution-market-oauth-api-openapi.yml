@@ -239,18 +239,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    Body_revoke_oauth_revoke_post:
-      properties:
-        token:
-          type: string
-          title: Token
-          default: ''
-        token_type_hint:
-          type: string
-          title: Token Type Hint
-          default: ''
-      type: object
-      title: Body_revoke_oauth_revoke_post
     ValidationError:
       properties:
         loc:
@@ -277,6 +265,18 @@ components:
       - msg
       - type
       title: ValidationError
+    Body_revoke_oauth_revoke_post:
+      properties:
+        token:
+          type: string
+          title: Token
+          default: ''
+        token_type_hint:
+          type: string
+          title: Token Type Hint
+          default: ''
+      type: object
+      title: Body_revoke_oauth_revoke_post
     HTTPValidationError:
       properties:
         detail:

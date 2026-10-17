@@ -262,16 +262,32 @@ paths:
               schema: {}
 components:
   schemas:
-    CloseSessionRequest:
+    ProviderReputation:
       properties:
-        reason:
+        reputation:
+          type: number
+          title: Reputation
+          default: 0.0
+        tasks_completed:
+          type: integer
+          title: Tasks Completed
+          default: 0
+        avg_rating:
           anyOf:
-          - type: string
-            maxLength: 500
+          - type: number
           - type: 'null'
-          title: Reason
+          title: Avg Rating
       type: object
-      title: CloseSessionRequest
+      title: ProviderReputation
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     CreateStreamRequest:
       properties:
         title:
@@ -321,6 +337,25 @@ components:
       - rate_per_unit
       - max_duration_minutes
       title: CreateStreamRequest
+    StreamListResponse:
+      properties:
+        streams:
+          items:
+            $ref: '#/components/schemas/StreamResponse'
+          type: array
+          title: Streams
+        count:
+          type: integer
+          title: Count
+        offset:
+          type: integer
+          title: Offset
+      type: object
+      required:
+      - streams
+      - count
+      - offset
+      title: StreamListResponse
     StreamResponse:
       properties:
         id:
@@ -383,31 +418,6 @@ components:
       - network
       - session_cap_usd
       title: StreamResponse
-    OpenSessionRequest:
-      properties:
-        cap_usdc:
-          type: number
-          exclusiveMinimum: 0.0
-          title: Cap Usdc
-          description: Session spending cap in USDC (<= $100). Must match the maxAmount of the signed X-Payment-Auth escrow authorization.
-        presence_nick:
-          anyOf:
-          - type: string
-            maxLength: 64
-          - type: 'null'
-          title: Presence Nick
-          description: Viewer's IRC nick in the paid Turnstile channel (presence binding).
-        presence_channel:
-          anyOf:
-          - type: string
-            maxLength: 80
-          - type: 'null'
-          title: Presence Channel
-          description: Paid Turnstile channel the viewer occupies (e.g. '#stream-x').
-      type: object
-      required:
-      - cap_usdc
-      title: OpenSessionRequest
     ValidationError:
       properties:
         loc:
@@ -434,51 +444,41 @@ components:
       - msg
       - type
       title: ValidationError
-    StreamListResponse:
+    CloseSessionRequest:
       properties:
-        streams:
-          items:
-            $ref: '#/components/schemas/StreamResponse'
-          type: array
-          title: Streams
-        count:
-          type: integer
-          title: Count
-        offset:
-          type: integer
-          title: Offset
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Reason
+      type: object
+      title: CloseSessionRequest
+    OpenSessionRequest:
+      properties:
+        cap_usdc:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Cap Usdc
+          description: Session spending cap in USDC (<= $100). Must match the maxAmount of the signed X-Payment-Auth escrow authorization.
+        presence_nick:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Presence Nick
+          description: Viewer's IRC nick in the paid Turnstile channel (presence binding).
+        presence_channel:
+          anyOf:
+          - type: string
+            maxLength: 80
+          - type: 'null'
+          title: Presence Channel
+          description: Paid Turnstile channel the viewer occupies (e.g. '#stream-x').
       type: object
       required:
-      - streams
-      - count
-      - offset
-      title: StreamListResponse
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ProviderReputation:
-      properties:
-        reputation:
-          type: number
-          title: Reputation
-          default: 0.0
-        tasks_completed:
-          type: integer
-          title: Tasks Completed
-          default: 0
-        avg_rating:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Avg Rating
-      type: object
-      title: ProviderReputation
+      - cap_usdc
+      title: OpenSessionRequest
   securitySchemes:
     erc8128:
       type: apiKey

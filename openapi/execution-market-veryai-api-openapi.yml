@@ -194,6 +194,20 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    OAuthUrlResponse:
+      properties:
+        url:
+          type: string
+          title: Url
+        state:
+          type: string
+          title: State
+      type: object
+      required:
+      - url
+      - state
+      title: OAuthUrlResponse
+      description: Returns an authorize URL the frontend redirects to.
     VeryAiStatusResponse:
       properties:
         verified:
@@ -250,20 +264,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    OAuthUrlResponse:
-      properties:
-        url:
-          type: string
-          title: Url
-        state:
-          type: string
-          title: State
-      type: object
-      required:
-      - url
-      - state
-      title: OAuthUrlResponse
-      description: Returns an authorize URL the frontend redirects to.
   securitySchemes:
     erc8128:
       type: apiKey
